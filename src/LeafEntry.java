@@ -2,7 +2,7 @@ import java.util.ArrayList;
 
 class LeafEntry extends Entry {
     private long recordId;
-    //long blockIdl;
+    //long blockId;
 
     LeafEntry(long recordId, ArrayList<Bounds> recordBounds) {
         super(new BoundingBox(recordBounds));

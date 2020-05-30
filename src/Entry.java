@@ -4,11 +4,19 @@ class Entry {
 
     Entry(Node childNode) {
         this.childNode = childNode;
-        //this.boundingBox = childNode.getOverallBoundingBox();
+        this.boundingBox = childNode.getOverallBoundingBox();
     }
 
     Entry(BoundingBox boundingBox)
     {
+        this.boundingBox = boundingBox;
+    }
+
+    void setChildNode(Node childNode) {
+        this.childNode = childNode;
+    }
+
+    void setBoundingBox(BoundingBox boundingBox) {
         this.boundingBox = boundingBox;
     }
 
@@ -21,9 +29,5 @@ class Entry {
 
     Node getChildNode() {
         return childNode;
-    }
-
-    void setChildNode(Node childNode) {
-        this.childNode = childNode;
     }
 }

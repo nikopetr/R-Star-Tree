@@ -41,35 +41,38 @@ class RStarTree {
     }
 
     // Inserts nodes recursively. As an optimization, the algorithm steps are
-    // way out of order. :) If this returns something, then that item should
-    // be added to the caller's level of the tree
-    private Node insert(Node node, Entry entry, int levelToAdd) {
+    // way out of order. :) If this returns a non null Entry, then that Entry should
+    // be added to the caller's Node of the tree
+    private Entry insert(Node node, Entry dataEntry, int levelToAdd) {
+
+        // Adjusting bounding box of the Node
+        node.adjustBoundingBoxToIncludeEntry(dataEntry);
 
         // CS2: If we're at a leaf, then use that level
         // I2: If N has less than M items, accommodate E in N
         if (node.getLevel() == levelToAdd)
-            node.insertEntry(entry);
+            node.insertEntry(dataEntry);
+
         else {
             // I1: Invoke ChooseSubtree. with the level as a parameter,
             // to find an appropriate node N, m which to place the
             // new leaf E
 
-            // of course, this already does all of that recursively. we just need to
-            // determine whether we need to split the overflow or not
-            Node childNode = insert(chooseSubTree(node, entry.getBoundingBox(), levelToAdd), entry, levelToAdd);
+            // Recurse to get the node that the new data entry will fit better
+            Entry bestEntry = chooseSubTree(node, dataEntry.getBoundingBox(), levelToAdd);
+            Node bestNode = bestEntry.getChildNode();
 
-            // If childNode returned null means no OverflowTreatment was called on children , returning null upwards
-            if (childNode == null)
-            {
-                node.adjustBoundingBoxToIncludeEntry(entry);
-                return null;
-            }
+            // Receiving a new Entry if the recursion caused the next level's Node to split
+            Entry newEntry = insert(bestNode, dataEntry, levelToAdd);
+            // Updating-Adjusting the bounding box of the Entry that points to the Updated Node
+            bestEntry.setBoundingBox(bestNode.getOverallBoundingBox());
 
-            // This gets joined to the list of items at this level
-            node.insertEntry(new Entry(childNode));
+            // If split was called on children, the new entry that the split caused gets joined to the list of items at this level
+            if (newEntry != null)
+                node.insertEntry(newEntry);
+            // No split was called on children, returning null upwards
+            return null;
         }
-
-        node.adjustBoundingBoxToIncludeEntry(entry);
 
 
         // If N has M+1 items. invoke OverflowTreatment with the
@@ -87,10 +90,10 @@ class RStarTree {
         return null;
     }
 
-    // choose subtree: only pass this items that do not have leaves
+    // Choose subtree: only pass this items that do not have leaves
     // I took out the loop portion of this algorithm, so it only
     // picks a subtree at that particular level
-    private Node chooseSubTree(Node node, BoundingBox boundingBoxToAdd, int levelToAdd) {
+    private Entry chooseSubTree(Node node, BoundingBox boundingBoxToAdd, int levelToAdd) {
 
         Entry bestEntry;
 
@@ -114,7 +117,7 @@ class RStarTree {
                 // overlap enlargement
                 bestEntry = Collections.min(node.getEntries().subList(0, CHOOSE_SUBTREE_P_ENTRIES), new EntryComparator.EntryOverlapEnlargementComparator(boundingBoxToAdd,node.getEntries()));
 
-                return bestEntry.getChildNode();
+                return bestEntry;
             }
 
             // Choose the entry in N whose rectangle needs least
@@ -123,8 +126,7 @@ class RStarTree {
             // whose rectangle needs least area enlargement, then
             // the entry with the rectangle of smallest area
             bestEntry = Collections.min(node.getEntries(), new EntryComparator.EntryOverlapEnlargementComparator(boundingBoxToAdd,node.getEntries()));
-            return bestEntry.getChildNode();
-
+            return bestEntry;
         }
 
         // if the child pointers in N do not point to leaves
@@ -135,11 +137,11 @@ class RStarTree {
         // rectangle. Resolve ties by choosing the leaf
         // with the rectangle of smallest area
         bestEntry = Collections.min(node.getEntries(), new EntryComparator.EntryAreaEnlargementComparator(boundingBoxToAdd));
-        return bestEntry.getChildNode();
+        return bestEntry;
     }
 
     // Algorithm OverflowTreatment
-    private Node overFlowTreatment(Node node) {
+    private Entry overFlowTreatment(Node node) {
 
         // If the level is not the root level and this is the first
         // call of OverflowTreatment in the given level
@@ -157,7 +159,7 @@ class RStarTree {
         // If OverflowTreatment caused a split of the root, create a new root
         if (node == root)
         {
-            Node oldRootNode = new Node(node.getLevel(),node.getEntries()); //TODO might need to change how we copy stuff
+            Node oldRootNode = new Node(node.getLevel(),node.getEntries());
 
             ArrayList<Entry> newRootEntries = new ArrayList<>();
             newRootEntries.add(new Entry(oldRootNode));
@@ -168,12 +170,13 @@ class RStarTree {
          }
          //TODO maybe changes needed here as well?
 
-        // Propagate upwards
-		return splitNode;
+        // Propagate the overflow treatment upwards
+		return new Entry(splitNode);
     }
 
     // Algorithm reinsert
     private void reInsert(Node node) {
+        System.out.println("asdasdasdasdasd");
         levelsInserted[node.getLevel()-1] = true; // Mark level as already reinserted
 
         if(node.getEntries().size() != Node.MAX_ENTRIES + 1)

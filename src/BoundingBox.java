@@ -74,7 +74,7 @@ class BoundingBox {
             if (overlapD <= 0) //TODO check if "=" is needed or not
                 return 0; // No overlap, return 0
             else
-                overlapValue = overlapD* overlapValue;
+                overlapValue = overlapD*overlapValue;
         }
         return overlapValue;
     }

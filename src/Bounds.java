@@ -11,8 +11,13 @@ class Bounds {
             this.lower = lower;
             this.upper = upper;
         }
-        else //TODO might just need to invert this instead of throwing exception if everything works okau
+        else //TODO might just need to invert this instead of throwing exception if everything works fine
             throw new IllegalArgumentException( "Lower Bound cannot be bigger than upper");
+//        else
+//        {
+//            this.lower = upper;
+//            this.upper = lower;
+//        }
 
     }
 
@@ -23,7 +28,6 @@ class Bounds {
     double getUpper() {
         return upper;
     }
-
 
 
 

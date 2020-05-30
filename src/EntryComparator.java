@@ -69,12 +69,12 @@ class EntryComparator {
         public int compare(Entry entryA, Entry entryB) {
             double overlapEntryA = calculateEntryOverlapValue(entryA, entryA.getBoundingBox());
             Entry newEntryA = new Entry(entryA.getChildNode()); // The entry after it includes the new bounding box
-            double overlapNewEntryA =  calculateEntryOverlapValue(entryA, newEntryA.getBoundingBox()); // Using the previous entry signature in order to check for equality
+            double overlapNewEntryA = calculateEntryOverlapValue(entryA, newEntryA.getBoundingBox()); // Using the previous entry signature in order to check for equality
             double overlapEnlargementEntryA = overlapNewEntryA - overlapEntryA ;
 
             double overlapEntryB = calculateEntryOverlapValue(entryB, entryB.getBoundingBox());
             Entry newEntryB = new Entry(entryB.getChildNode()); // The entry after it includes the new bounding box
-            double overlapNewEntryB =  calculateEntryOverlapValue(entryB, newEntryB.getBoundingBox()); // Using the previous entry signature in order to check for equality
+            double overlapNewEntryB = calculateEntryOverlapValue(entryB, newEntryB.getBoundingBox()); // Using the previous entry signature in order to check for equality
             double overlapEnlargementEntryB =  overlapNewEntryB - overlapEntryB ;
 
             if (overlapEnlargementEntryA < 0 || overlapEnlargementEntryB < 0)

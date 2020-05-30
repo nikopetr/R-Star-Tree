@@ -67,37 +67,35 @@ public class Main {
 //        recCoordinates.add(9.0);
 //        recCoordinates.add(0.9);
 //        rStarTree.insertRecord(new Record(1, recCoordinates));
-
-
-
+//
 //        recCoordinates = new ArrayList<>();
 //        recCoordinates.add(-1.0);
 //        recCoordinates.add(0.0);
 //        rStarTree.insertRecord(new Record(1, recCoordinates));
 //
 //        recCoordinates = new ArrayList<>();
-//        recCoordinates.add(1.0);
-//        recCoordinates.add(1.0);
+//        recCoordinates.add(23.0);
+//        recCoordinates.add(1.7);
+//        rStarTree.insertRecord(new Record(1, recCoordinates));
+//
+//        recCoordinates = new ArrayList<>();
+//        recCoordinates.add(12.0);
+//        recCoordinates.add(10.0);
+//        rStarTree.insertRecord(new Record(1, recCoordinates));
+//
+//        recCoordinates = new ArrayList<>();
+//        recCoordinates.add(20.0);
+//        recCoordinates.add(-2.0);
 //        rStarTree.insertRecord(new Record(1, recCoordinates));
 //
 //        recCoordinates = new ArrayList<>();
 //        recCoordinates.add(2.0);
-//        recCoordinates.add(1.0);
-//        rStarTree.insertRecord(new Record(1, recCoordinates));
-//
-//        recCoordinates = new ArrayList<>();
-//        recCoordinates.add(2.0);
-//        recCoordinates.add(2.0);
-//        rStarTree.insertRecord(new Record(1, recCoordinates));
-//
-//        recCoordinates = new ArrayList<>();
-//        recCoordinates.add(2.0);
-//        recCoordinates.add(0.1);
+//        recCoordinates.add(-0.1);
 //        rStarTree.insertRecord(new Record(1, recCoordinates));
 //
 //        recCoordinates = new ArrayList<>();
 //        recCoordinates.add(-1.0);
-//        recCoordinates.add(2.0);
+//        recCoordinates.add(-2.0);
 //        rStarTree.insertRecord(new Record(1, recCoordinates));
 //
 //        recCoordinates = new ArrayList<>();
@@ -106,8 +104,8 @@ public class Main {
 //        rStarTree.insertRecord(new Record(1, recCoordinates));
 //
 //        recCoordinates = new ArrayList<>();
-//        recCoordinates.add(2.0);
-//        recCoordinates.add(1.0);
+//        recCoordinates.add(15.0);
+//        recCoordinates.add(-1.0);
 //        rStarTree.insertRecord(new Record(1, recCoordinates));
 
         //rStarTree.testSplitting();
