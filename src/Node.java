@@ -20,7 +20,7 @@ class Node{
         adjustBoundingBoxOnEntries();
     }
 
-    Node(int level, ArrayList<Entry> entries, BoundingBox overallBoundingBox) {
+    private Node(int level, ArrayList<Entry> entries, BoundingBox overallBoundingBox) {
         this.level = level;
         this.entries = entries;
         this.overallBoundingBox = overallBoundingBox;
@@ -58,6 +58,10 @@ class Node{
 
     void adjustBoundingBoxOnEntries(){
         overallBoundingBox = new BoundingBox(Bounds.findMinimumBounds(entries));
+    }
+
+    void adjustBoundingBoxToIncludeEntry(Entry entry){
+        overallBoundingBox = new BoundingBox(Bounds.findMinimumBounds(overallBoundingBox,entry.getBoundingBox()));
     }
 
 // Returns the distributions of the best Axis

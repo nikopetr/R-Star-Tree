@@ -15,9 +15,19 @@ class RStarTree {
     private boolean[] levelsInserted;
 
     RStarTree(int dimensions) {
+        MetaData.DIMENSIONS = dimensions;
         this.root = new Node(1); // We are increasing the size from the root, the root (top level) will always have the highest level
         this.totalLevels = 1;
-        MetaData.DIMENSIONS = dimensions;
+
+        ArrayList<Bounds> initialBounds = new ArrayList<>();
+        // For each dimension finds the max interval
+        for (int d = 0; d < MetaData.DIMENSIONS; d++)
+        {
+            Bounds axisBound = new Bounds(-Double.MAX_VALUE,Double.MAX_VALUE);
+            initialBounds.add(axisBound);
+        }
+        root.setOverallBoundingBox(new BoundingBox(initialBounds));
+
     }
 
     void insertRecord(Record record) {
@@ -36,12 +46,9 @@ class RStarTree {
     private Node insert(Node node, Entry entry, int levelToAdd) {
 
         // CS2: If we're at a leaf, then use that level
+        // I2: If N has less than M items, accommodate E in N
         if (node.getLevel() == levelToAdd)
-        {
-            // I2: If N has less than M items, accommodate E in N
             node.insertEntry(entry);
-           // node.adjustBoundingBoxOnEntries(); //TODO FIND BETTER WAY
-        }
         else {
             // I1: Invoke ChooseSubtree. with the level as a parameter,
             // to find an appropriate node N, m which to place the
@@ -53,12 +60,17 @@ class RStarTree {
 
             // If childNode returned null means no OverflowTreatment was called on children , returning null upwards
             if (childNode == null)
+            {
+                node.adjustBoundingBoxToIncludeEntry(entry);
                 return null;
+            }
 
             // This gets joined to the list of items at this level
             node.insertEntry(new Entry(childNode));
-           // node.adjustBoundingBoxOnEntries(); //TODO FIND BETTER WAY
         }
+
+        node.adjustBoundingBoxToIncludeEntry(entry);
+
 
         // If N has M+1 items. invoke OverflowTreatment with the
         // level of N as a parameter [for reinsertion or split]
@@ -74,7 +86,6 @@ class RStarTree {
 
         return null;
     }
-//    }
 
     // choose subtree: only pass this items that do not have leaves
     // I took out the loop portion of this algorithm, so it only
@@ -152,7 +163,7 @@ class RStarTree {
             newRootEntries.add(new Entry(oldRootNode));
             newRootEntries.add(new Entry(splitNode));
 
-            root = new Node(++totalLevels,newRootEntries,new BoundingBox(Bounds.findMinimumBounds(newRootEntries)));
+            root = new Node(++totalLevels,newRootEntries);
             return null;
          }
          //TODO maybe changes needed here as well?
@@ -195,9 +206,7 @@ class RStarTree {
 
     private Node split(Node node)
     {
-        ArrayList<Node> splitNodes = node.splitNode();
-        //node.setLevel(splitNodes.get(0).getLevel()); //TODO MIGHT BE USELESS, REMOVE THIS
-        //node.setOverallBoundingBox(splitNodes.get(0).getOverallBoundingBox());
+        ArrayList<Node> splitNodes = node.splitNode(); // The new node added
         node.setEntries(splitNodes.get(0).getEntries());
         node.adjustBoundingBoxOnEntries();
         return splitNodes.get(1);

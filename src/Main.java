@@ -48,6 +48,28 @@ public class Main {
         recCoordinates.add(0.1);
         rStarTree.insertRecord(new Record(1, recCoordinates));
 
+        recCoordinates = new ArrayList<>();
+        recCoordinates.add(-101.0);
+        recCoordinates.add(0.1);
+        rStarTree.insertRecord(new Record(1, recCoordinates));
+
+        recCoordinates = new ArrayList<>();
+        recCoordinates.add(-102.0);
+        recCoordinates.add(0.1);
+        rStarTree.insertRecord(new Record(1, recCoordinates));
+
+        recCoordinates = new ArrayList<>();
+        recCoordinates.add(-125.0);
+        recCoordinates.add(1.0);
+        rStarTree.insertRecord(new Record(1, recCoordinates));
+
+//        recCoordinates = new ArrayList<>();
+//        recCoordinates.add(9.0);
+//        recCoordinates.add(0.9);
+//        rStarTree.insertRecord(new Record(1, recCoordinates));
+
+
+
 //        recCoordinates = new ArrayList<>();
 //        recCoordinates.add(-1.0);
 //        recCoordinates.add(0.0);
