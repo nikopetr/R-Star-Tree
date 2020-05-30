@@ -21,10 +21,10 @@ class Entry {
     }
 
     BoundingBox getBoundingBox() {
-        if (this instanceof LeafEntry)
+      //  if (this instanceof LeafEntry)
             return boundingBox;
-        else
-            return childNode.getOverallBoundingBox();
+     //   else
+          //  return childNode.getOverallBoundingBox();
     }
 
     Node getChildNode() {

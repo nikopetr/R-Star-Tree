@@ -40,6 +40,7 @@ class Node{
 
     void setEntries(ArrayList<Entry> entries) {
         this.entries = entries;
+        adjustBoundingBoxOnEntries();
     }
 
     ArrayList<Entry> getEntries() {
@@ -56,7 +57,7 @@ class Node{
         return chooseSplitIndex(splitAxisDistributions);
     }
 
-    void adjustBoundingBoxOnEntries(){
+    private void adjustBoundingBoxOnEntries(){
         overallBoundingBox = new BoundingBox(Bounds.findMinimumBounds(entries));
     }
 

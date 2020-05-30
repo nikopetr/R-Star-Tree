@@ -65,6 +65,7 @@ class EntryComparator {
             this.nodeEntries = nodeEntries;
         }
 
+        //TODO FIX THIS S.O.S
         @Override
         public int compare(Entry entryA, Entry entryB) {
             double overlapEntryA = calculateEntryOverlapValue(entryA, entryA.getBoundingBox());
