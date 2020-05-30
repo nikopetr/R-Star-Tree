@@ -17,7 +17,7 @@ class Node{
     Node(int level, ArrayList<Entry> entries) {
         this.level = level;
         this.entries = entries;
-        stretchBoundingBoxBasedOnEntries();
+        adjustBoundingBoxOnEntries();
     }
 
     Node(int level, ArrayList<Entry> entries, BoundingBox overallBoundingBox) {
@@ -56,7 +56,7 @@ class Node{
         return chooseSplitIndex(splitAxisDistributions);
     }
 
-    void stretchBoundingBoxBasedOnEntries(){
+    void adjustBoundingBoxOnEntries(){
         overallBoundingBox = new BoundingBox(Bounds.findMinimumBounds(entries));
     }
 

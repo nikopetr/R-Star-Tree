@@ -40,7 +40,7 @@ class RStarTree {
         {
             // I2: If N has less than M items, accommodate E in N
             node.insertEntry(entry);
-            node.stretchBoundingBoxBasedOnEntries(); //TODO FIND BETTER WAY
+           // node.adjustBoundingBoxOnEntries(); //TODO FIND BETTER WAY
         }
         else {
             // I1: Invoke ChooseSubtree. with the level as a parameter,
@@ -57,7 +57,7 @@ class RStarTree {
 
             // This gets joined to the list of items at this level
             node.insertEntry(new Entry(childNode));
-            node.stretchBoundingBoxBasedOnEntries(); //TODO FIND BETTER WAY
+           // node.adjustBoundingBoxOnEntries(); //TODO FIND BETTER WAY
         }
 
         // If N has M+1 items. invoke OverflowTreatment with the
@@ -163,7 +163,6 @@ class RStarTree {
 
     // Algorithm reinsert
     private void reInsert(Node node) {
-
         levelsInserted[node.getLevel()-1] = true; // Mark level as already reinserted
 
         if(node.getEntries().size() != Node.MAX_ENTRIES + 1)
@@ -200,7 +199,7 @@ class RStarTree {
         //node.setLevel(splitNodes.get(0).getLevel()); //TODO MIGHT BE USELESS, REMOVE THIS
         //node.setOverallBoundingBox(splitNodes.get(0).getOverallBoundingBox());
         node.setEntries(splitNodes.get(0).getEntries());
-        node.stretchBoundingBoxBasedOnEntries();
+        node.adjustBoundingBoxOnEntries();
         return splitNodes.get(1);
     }
 

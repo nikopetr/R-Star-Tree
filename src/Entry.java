@@ -4,7 +4,7 @@ class Entry {
 
     Entry(Node childNode) {
         this.childNode = childNode;
-        this.boundingBox = childNode.getOverallBoundingBox();
+        this.boundingBox = childNode.getOverallBoundingBox();;
     }
 
     Entry(BoundingBox boundingBox)
