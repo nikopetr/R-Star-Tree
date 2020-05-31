@@ -161,13 +161,18 @@ class RStarTree {
         // during the insertion of one data rectangle, then reinsert
         if (childNode != root && !levelsInserted[childNode.getLevel()-1])
         {
+            levelsInserted[childNode.getLevel()-1] = true; // Mark level as already reinserted
             reInsert(parentEntry);
             return null;
         }
 
+        levelsInserted[childNode.getLevel()-1] = true; // Mark level as already reinserted
+        
         // Else invoke Split
-        ArrayList<Node> splitNodes = split(childNode);
-        levelsInserted[childNode.getLevel()-1] = true; // Marking as already inserted level
+        // The two nodes occurring after the split
+        ArrayList<Node> splitNodes = childNode.splitNode();
+        if (splitNodes.size() != 2)
+            throw new IllegalStateException("The resulting Nodes after a split cannot be more or less than two");
 
         // Adjusting the previous Node with the new entries and bounds
         childNode.setEntries(splitNodes.get(0).getEntries());
@@ -199,7 +204,6 @@ class RStarTree {
     // Algorithm reinsert
     private void reInsert(Entry parentEntry) {
         Node childNode = parentEntry.getChildNode(); //TODO check if you can avoid getting child node
-        levelsInserted[childNode.getLevel()-1] = true; // Mark level as already reinserted
 
         if(childNode.getEntries().size() != Node.MAX_ENTRIES + 1)
             throw new IllegalStateException("Cannot throw reinsert for node with total entries fewer than M+1");
@@ -229,12 +233,6 @@ class RStarTree {
 
         for (Entry entry : removedEntries)
             insert(null,entry,childNode.getLevel());
-    }
-
-    private ArrayList<Node>  split(Node node)
-    {
-        ArrayList<Node> splitNodes = node.splitNode();
-        return splitNodes; // The new node added
     }
 
 //    void testSplitting() {
