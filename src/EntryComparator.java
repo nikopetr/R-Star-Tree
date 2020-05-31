@@ -55,7 +55,6 @@ class EntryComparator {
     // Class used to compare entries by their overlap enlargement of including a new "rectangle" item
     static class EntryOverlapEnlargementComparator implements Comparator<Entry>
     {
-
         private BoundingBox boundingBoxToAdd;
         private ArrayList<Entry> nodeEntries;
 
@@ -65,16 +64,16 @@ class EntryComparator {
             this.nodeEntries = nodeEntries;
         }
 
-        //TODO FIX THIS S.O.S
+        //TODO maybe make this run a bit faster
         @Override
         public int compare(Entry entryA, Entry entryB) {
             double overlapEntryA = calculateEntryOverlapValue(entryA, entryA.getBoundingBox());
-            Entry newEntryA = new Entry(entryA.getChildNode()); // The entry after it includes the new bounding box
+            Entry newEntryA = new Entry(new BoundingBox(Bounds.findMinimumBounds(entryA.getBoundingBox(),boundingBoxToAdd))); // The entry's bounding box after it includes the new bounding box
             double overlapNewEntryA = calculateEntryOverlapValue(entryA, newEntryA.getBoundingBox()); // Using the previous entry signature in order to check for equality
             double overlapEnlargementEntryA = overlapNewEntryA - overlapEntryA ;
 
             double overlapEntryB = calculateEntryOverlapValue(entryB, entryB.getBoundingBox());
-            Entry newEntryB = new Entry(entryB.getChildNode()); // The entry after it includes the new bounding box
+            Entry newEntryB = new Entry(new BoundingBox(Bounds.findMinimumBounds(entryB.getBoundingBox(),boundingBoxToAdd))); // The entry's bounding box after it includes the new bounding box
             double overlapNewEntryB = calculateEntryOverlapValue(entryB, newEntryB.getBoundingBox()); // Using the previous entry signature in order to check for equality
             double overlapEnlargementEntryB =  overlapNewEntryB - overlapEntryB ;
 
@@ -96,7 +95,7 @@ class EntryComparator {
             double sum = 0;
             for (Entry nodeEntry : nodeEntries)
             {
-                if (nodeEntry != entry) //TODO CHECK THIS CONDITION MIGHT NOT WORK
+                if (nodeEntry != entry)
                     sum += BoundingBox.calculateOverlapValue(boundingBox,nodeEntry.getBoundingBox());
             }
             return sum;

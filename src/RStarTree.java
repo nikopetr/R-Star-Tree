@@ -167,7 +167,7 @@ class RStarTree {
         }
 
         levelsInserted[childNode.getLevel()-1] = true; // Mark level as already reinserted
-        
+
         // Else invoke Split
         // The two nodes occurring after the split
         ArrayList<Node> splitNodes = childNode.splitNode();

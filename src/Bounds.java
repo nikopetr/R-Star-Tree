@@ -29,10 +29,6 @@ class Bounds {
         return upper;
     }
 
-
-
-    //TODO MIGHT BE OPTIMIZABLE
-
     // Returns an ArrayList with bounds for each dimension, including the the minimum bounds needed to fit the given entries
     static ArrayList<Bounds> findMinimumBounds(ArrayList<Entry> entries) {
         ArrayList<Bounds> minimumBounds = new ArrayList<>();
