@@ -11,7 +11,8 @@ class RStarTree {
     private boolean[] levelsInserted; // Used to know which levels have already called overFlowTreatment on a data insertion procedure
 
     private BoundingBox searchBoundingBox; // Global bounding box used for range queries
-    private ArrayList<Long> qualifyingRecordIds; // Global record ids used for range queries
+    private ArrayList<Double> searchPoint; // Global coordinates of point used for radius queries
+    private ArrayList<Long> qualifyingRecordIds; // Global record ids used for queries
 
     RStarTree(int dimensions) {
         MetaData.DIMENSIONS = dimensions;
@@ -33,14 +34,56 @@ class RStarTree {
         return root;
     }
 
+    // Query which returns the ids of the Records that are inside the given searchBoundingBox
     ArrayList<Long> searchQuery(BoundingBox searchBoundingBox){
         this.searchBoundingBox = searchBoundingBox;
         this.qualifyingRecordIds = new ArrayList<>();
         search(root);
-        searchBoundingBox = null;
+        this.searchBoundingBox = null;
         return qualifyingRecordIds;
     }
 
+    // Query which returns the ids of the Records that are inside the radius of the given point
+    ArrayList<Long> searchQuery(ArrayList<Double> searchPoint, double radius){
+        this.searchPoint = searchPoint;
+        this.qualifyingRecordIds = new ArrayList<>();
+        search(root,radius);
+        this.searchPoint = null;
+        return qualifyingRecordIds;
+    }
+
+
+    // Search for Records within searchPoint's radius
+    private void search(Node node, double radius){
+        // [Search subtrees]
+        // If T is not a leaf check each entry E to determine whether E.R
+        //overlaps with the searchPoint.
+        if (node.getLevel() != LEAF_LEVEL)
+            for (Entry entry: node.getEntries())
+            {
+                // For all overlapping entries, invoke Search on the tree whose root is
+                // pointed to by E.childPTR.
+                if (entry.getBoundingBox().checkOverLapWithPoint(searchPoint,radius))
+                    search(entry.getChildNode(),radius);
+            }
+
+            // [Search leaf node]
+            // If T is a leaf, check all entries E to determine whether E.r overlaps S.
+            // If so, E is a qualifying record
+        else
+            for (Entry entry: node.getEntries())
+            {
+                // For all overlapping entries, invoke Search on the tree whose root is
+                // pointed to by E.childPTR.
+                if (entry.getBoundingBox().checkOverLapWithPoint(searchPoint,radius))
+                {
+                    LeafEntry leafEntry = (LeafEntry) entry;
+                    qualifyingRecordIds.add(leafEntry.getRecordId());
+                }
+            }
+    }
+
+    // Search for records within searchBoundingBox
     private void search(Node node){
         // [Search subtrees]
         // If T is not a leaf check each entry E to determine whether E.R

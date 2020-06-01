@@ -1,3 +1,4 @@
+import java.lang.reflect.Array;
 import java.util.ArrayList;
 
 import static java.lang.Math.abs;
@@ -34,6 +35,31 @@ class BoundingBox {
             margin = calculateMargin();
         }
         return margin;
+    }
+
+    // Returns true if the given's point radius overlaps with the bounding box
+    boolean checkOverLapWithPoint(ArrayList<Double> point, double radius){
+        // If the minimum distance from the point is less or equal the point's radius then the bounding box is in the range
+        return findMinDistanceFromPoint(point) <= radius;
+    }
+
+    // Returns the minimum distance between the bounding box and the point
+    private double findMinDistanceFromPoint(ArrayList<Double> point){
+        double minDistance = 0;
+        // For every dimension find the minimum distance
+        double rd;
+        for (int d = 0; d < MetaData.DIMENSIONS; d++)
+        {
+            if(getBounds().get(d).getLower() > point.get(d))
+                rd = getBounds().get(d).getLower();
+            else if (getBounds().get(d).getUpper() < point.get(d))
+                rd = getBounds().get(d).getUpper();
+            else
+                rd = point.get(d);
+
+            minDistance += Math.pow(point.get(d) - rd,2);
+        }
+        return sqrt(minDistance);
     }
 
     private ArrayList<Double> getCenter() {
@@ -92,7 +118,7 @@ class BoundingBox {
         return overlapValue;
     }
 
-    // Calculates and returns the euclidean distance value between two bounding boxes
+    // Calculates and returns the euclidean distance value between two bounding boxes's centers
     static double findDistance(BoundingBox boundingBoxA, BoundingBox boundingBoxB) {
         double distance = 0;
         // For every dimension find the intersection point

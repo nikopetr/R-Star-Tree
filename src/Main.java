@@ -122,6 +122,18 @@ public class Main {
 
         for (Long id: queryRecords)
             System.out.print(id + ", ");
+        System.out.println();
+
+        // Point radius query testing
+        System.out.print("Point Radius Query: ");
+        ArrayList<Double> point = new ArrayList<>();
+        // Circle' center
+        point.add(0.0);
+        point.add(0.0);
+        queryRecords = rStarTree.searchQuery(point,125.004);
+
+        for (Long id: queryRecords)
+            System.out.print(id + ", ");
 
     }
 
