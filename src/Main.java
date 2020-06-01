@@ -21,47 +21,47 @@ public class Main {
         recCoordinates = new ArrayList<>();
         recCoordinates.add(-80.0);
         recCoordinates.add(-1.0);
-        rStarTree.insertRecord(new Record(1, recCoordinates));
+        rStarTree.insertRecord(new Record(2, recCoordinates));
 
         recCoordinates = new ArrayList<>();
         recCoordinates.add(4.0);
         recCoordinates.add(1.0);
-        rStarTree.insertRecord(new Record(1, recCoordinates));
+        rStarTree.insertRecord(new Record(3, recCoordinates));
 
         recCoordinates = new ArrayList<>();
         recCoordinates.add(5.0);
         recCoordinates.add(0.0);
-        rStarTree.insertRecord(new Record(1, recCoordinates));
+        rStarTree.insertRecord(new Record(4, recCoordinates));
 
         recCoordinates = new ArrayList<>();
         recCoordinates.add(14.0);
         recCoordinates.add(1.0);
-        rStarTree.insertRecord(new Record(1, recCoordinates));
+        rStarTree.insertRecord(new Record(5, recCoordinates));
 
         recCoordinates = new ArrayList<>();
         recCoordinates.add(2.0);
         recCoordinates.add(1.0);
-        rStarTree.insertRecord(new Record(1, recCoordinates));
+        rStarTree.insertRecord(new Record(6, recCoordinates));
 
         recCoordinates = new ArrayList<>();
         recCoordinates.add(2.0);
         recCoordinates.add(0.1);
-        rStarTree.insertRecord(new Record(1, recCoordinates));
+        rStarTree.insertRecord(new Record(7, recCoordinates));
 
         recCoordinates = new ArrayList<>();
         recCoordinates.add(-101.0);
         recCoordinates.add(0.1);
-        rStarTree.insertRecord(new Record(1, recCoordinates));
+        rStarTree.insertRecord(new Record(8, recCoordinates));
 
         recCoordinates = new ArrayList<>();
         recCoordinates.add(-102.0);
         recCoordinates.add(0.1);
-        rStarTree.insertRecord(new Record(1, recCoordinates));
+        rStarTree.insertRecord(new Record(9, recCoordinates));
 
         recCoordinates = new ArrayList<>();
         recCoordinates.add(-125.0);
         recCoordinates.add(1.0);
-        rStarTree.insertRecord(new Record(1, recCoordinates));
+        rStarTree.insertRecord(new Record(10, recCoordinates));
 
 //        recCoordinates = new ArrayList<>();
 //        recCoordinates.add(9.0);
@@ -112,6 +112,16 @@ public class Main {
 
         Node node = rStarTree.getRoot();
         printOverallNode(node);
+
+        // Range query testing
+        System.out.print("Range Query: ");
+        ArrayList<Bounds> queryBounds = new ArrayList<>();
+        queryBounds.add(new Bounds(-154, -102.0));
+        queryBounds.add(new Bounds(0.1, 254.0));
+        ArrayList<Long> queryRecords = rStarTree.searchQuery(new BoundingBox(queryBounds));
+
+        for (Long id: queryRecords)
+            System.out.print(id + ", ");
 
     }
 

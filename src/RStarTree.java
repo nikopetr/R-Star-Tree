@@ -6,13 +6,12 @@ class RStarTree {
     private static final int CHOOSE_SUBTREE_P_ENTRIES = 32;
     private static final int REINSERT_P_ENTRIES = (int) (0.30 * Node.MAX_ENTRIES); // Setting p to 30% of max entries
 
-    Node getRoot() { //TODO DELETE THIS AFTER TESTING
-        return root;
-    }
-
     private Node root; // The root of the tree
     private int totalLevels; // The total levels of the tree
     private boolean[] levelsInserted; // Used to know which levels have already called overFlowTreatment on a data insertion procedure
+
+    private BoundingBox searchBoundingBox; // Global bounding box used for range queries
+    private ArrayList<Long> qualifyingRecordIds; // Global record ids used for range queries
 
     RStarTree(int dimensions) {
         MetaData.DIMENSIONS = dimensions;
@@ -28,6 +27,47 @@ class RStarTree {
         }
         root.setOverallBoundingBox(new BoundingBox(initialBounds));
 
+    }
+
+    Node getRoot() { //TODO DELETE THIS AFTER TESTING
+        return root;
+    }
+
+    ArrayList<Long> searchQuery(BoundingBox searchBoundingBox){
+        this.searchBoundingBox = searchBoundingBox;
+        this.qualifyingRecordIds = new ArrayList<>();
+        search(root);
+        searchBoundingBox = null;
+        return qualifyingRecordIds;
+    }
+
+    private void search(Node node){
+        // [Search subtrees]
+        // If T is not a leaf check each entry E to determine whether E.R
+        //overlaps searchBoundingBox.
+        if (node.getLevel() != LEAF_LEVEL)
+            for (Entry entry: node.getEntries())
+            {
+                // For all overlapping entries, invoke Search on the tree whose root is
+                // pointed to by E.childPTR.
+                if (BoundingBox.checkOverlap(entry.getBoundingBox(),searchBoundingBox))
+                    search(entry.getChildNode());
+            }
+
+            // [Search leaf node]
+            // If T is a leaf, check all entries E to determine whether E.r overlaps S.
+            // If so, E is a qualifying record\
+        else
+            for (Entry entry: node.getEntries())
+            {
+                // For all overlapping entries, invoke Search on the tree whose root is
+                // pointed to by E.childPTR.
+                if (BoundingBox.checkOverlap(entry.getBoundingBox(),searchBoundingBox))
+                {
+                    LeafEntry leafEntry = (LeafEntry) entry;
+                    qualifyingRecordIds.add(leafEntry.getRecordId());
+                }
+            }
     }
 
     void insertRecord(Record record) {

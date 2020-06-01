@@ -63,6 +63,19 @@ class BoundingBox {
         return abs(productOfEdges);
     }
 
+    // Returns true if the two bounding boxes overlap
+    static boolean checkOverlap(BoundingBox boundingBoxA, BoundingBox boundingBoxB) {
+        // For every dimension find the intersection point
+        for (int d = 0; d < MetaData.DIMENSIONS; d++)
+        {
+            double overlapD = Math.min(boundingBoxA.getBounds().get(d).getUpper(), boundingBoxB.getBounds().get(d).getUpper())
+                    - Math.max(boundingBoxA.getBounds().get(d).getLower(), boundingBoxB.getBounds().get(d).getLower());
+            if (overlapD < 0) //TODO check if "=" is needed or not
+                return false;
+        }
+        return true;
+    }
+
     // Calculates and returns the overlap value between two bounding boxes
     static double calculateOverlapValue(BoundingBox boundingBoxA, BoundingBox boundingBoxB) {
         double overlapValue = 1;
