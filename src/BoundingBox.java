@@ -44,7 +44,7 @@ class BoundingBox {
     }
 
     // Returns the minimum distance between the bounding box and the point
-    private double findMinDistanceFromPoint(ArrayList<Double> point){
+    double findMinDistanceFromPoint(ArrayList<Double> point){
         double minDistance = 0;
         // For every dimension find the minimum distance
         double rd;
@@ -119,7 +119,7 @@ class BoundingBox {
     }
 
     // Calculates and returns the euclidean distance value between two bounding boxes's centers
-    static double findDistance(BoundingBox boundingBoxA, BoundingBox boundingBoxB) {
+    static double findDistanceBetweenBoundingBoxes(BoundingBox boundingBoxA, BoundingBox boundingBoxB) {
         double distance = 0;
         // For every dimension find the intersection point
         for (int d = 0; d < MetaData.DIMENSIONS; d++)

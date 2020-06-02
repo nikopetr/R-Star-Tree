@@ -102,7 +102,7 @@ class EntryComparator {
         }
     }
 
-    // Class used to compare entries by their lower or upper bounds
+    // Class used to compare entries by their distance from their overall's bouncing box's center
     static class EntryDistanceFromCenterComparator implements Comparator<Entry>
     {
         private BoundingBox boundingBox;
@@ -113,7 +113,22 @@ class EntryComparator {
 
         public int compare(Entry entryA, Entry entryB)
         {
-            return Double.compare(BoundingBox.findDistance(entryA.getBoundingBox(),boundingBox),BoundingBox.findDistance(entryB.getBoundingBox(),boundingBox));
+            return Double.compare(BoundingBox.findDistanceBetweenBoundingBoxes(entryA.getBoundingBox(),boundingBox),BoundingBox.findDistanceBetweenBoundingBoxes(entryB.getBoundingBox(),boundingBox));
+        }
+    }
+
+    // Class used to compare entries by their distance from a point
+    static class EntryDistanceFromPointComparator implements Comparator<Entry>
+    {
+        private ArrayList<Double> point;
+
+        EntryDistanceFromPointComparator(ArrayList<Double> point) {
+            this.point = point;
+        }
+
+        public int compare(Entry entryA, Entry entryB)
+        {
+            return Double.compare(entryA.getBoundingBox().findMinDistanceFromPoint(point),entryB.getBoundingBox().findMinDistanceFromPoint(point));
         }
     }
 }

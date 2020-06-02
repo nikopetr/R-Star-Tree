@@ -1,6 +1,7 @@
+import javafx.util.Pair;
+
 import java.io.*;
 import java.util.ArrayList;
-
 
 public class Main {
 
@@ -118,7 +119,7 @@ public class Main {
         ArrayList<Bounds> queryBounds = new ArrayList<>();
         queryBounds.add(new Bounds(-154, -102.0));
         queryBounds.add(new Bounds(0.1, 254.0));
-        ArrayList<Long> queryRecords = rStarTree.searchQuery(new BoundingBox(queryBounds));
+        ArrayList<Long> queryRecords = rStarTree.getDataInBoundingBox(new BoundingBox(queryBounds));
 
         for (Long id: queryRecords)
             System.out.print(id + ", ");
@@ -130,10 +131,23 @@ public class Main {
         // Circle' center
         point.add(0.0);
         point.add(0.0);
-        queryRecords = rStarTree.searchQuery(point,125.004);
+        queryRecords = rStarTree.getDataInCircle(point,125.004);
 
         for (Long id: queryRecords)
             System.out.print(id + ", ");
+        System.out.println();
+
+        // Point radius query testing
+        System.out.print("KNN Query: ");
+        point = new ArrayList<>();
+        // Point's center
+        point.add(0.0);
+        point.add(0.0);
+        queryRecords = rStarTree.getNearestNeighbours(point,9);
+
+        for (Long id: queryRecords)
+            System.out.print(id + ", ");
+        System.out.println();
 
     }
 
