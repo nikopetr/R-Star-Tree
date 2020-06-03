@@ -1,12 +1,12 @@
+import java.io.Serializable;
 import java.util.ArrayList;
 
 
-class Node{
+class Node  implements Serializable {
     static final int MAX_ENTRIES = 4;
     private static final int MINIMUM_ENTRIES = (int)(0.4 * MAX_ENTRIES); // Setting m to 40%
 
     private int level;
-    private BoundingBox overallBoundingBox;
     private ArrayList<Entry> entries;
 
     Node(int level) {
@@ -17,30 +17,14 @@ class Node{
     Node(int level, ArrayList<Entry> entries) {
         this.level = level;
         this.entries = entries;
-        adjustBoundingBoxOnEntries();
-    }
-
-    private Node(int level, ArrayList<Entry> entries, BoundingBox overallBoundingBox) {
-        this.level = level;
-        this.entries = entries;
-        this.overallBoundingBox = overallBoundingBox;
     }
 
     int getLevel() {
         return level;
     }
 
-    BoundingBox getOverallBoundingBox() {
-        return overallBoundingBox;
-    }
-
-    void setOverallBoundingBox(BoundingBox overallBoundingBox) {
-        this.overallBoundingBox = overallBoundingBox;
-    }
-
     void setEntries(ArrayList<Entry> entries) {
         this.entries = entries;
-        adjustBoundingBoxOnEntries();
     }
 
     ArrayList<Entry> getEntries() {
@@ -55,14 +39,6 @@ class Node{
     ArrayList<Node> splitNode() {
         ArrayList<Distribution> splitAxisDistributions = chooseSplitAxis();
         return chooseSplitIndex(splitAxisDistributions);
-    }
-
-    private void adjustBoundingBoxOnEntries(){
-        overallBoundingBox = new BoundingBox(Bounds.findMinimumBounds(entries));
-    }
-
-    void adjustBoundingBoxToIncludeEntry(Entry entry){
-        overallBoundingBox = new BoundingBox(Bounds.findMinimumBounds(overallBoundingBox,entry.getBoundingBox()));
     }
 
 // Returns the distributions of the best Axis
@@ -167,8 +143,8 @@ private ArrayList<Distribution> chooseSplitAxis() {
         ArrayList<Node> splitNodes = new ArrayList<>();
         DistributionGroup firstGroup = splitAxisDistributions.get(bestDistributionIndex).getFirstGroup();
         DistributionGroup secondGroup = splitAxisDistributions.get(bestDistributionIndex).getSecondGroup();
-        splitNodes.add(new Node(level,firstGroup.getEntries(),firstGroup.getBoundingBox()));
-        splitNodes.add(new Node(level,secondGroup.getEntries(),secondGroup.getBoundingBox()));
+        splitNodes.add(new Node(level,firstGroup.getEntries()));
+        splitNodes.add(new Node(level,secondGroup.getEntries()));
         return splitNodes;
     }
 }

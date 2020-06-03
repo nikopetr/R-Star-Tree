@@ -9,10 +9,24 @@ public class Main {
 
     public static void main(String[] args) throws IOException, ClassNotFoundException {
 
+        MetaData.DIMENSIONS = 2 ;
+        ArrayList<Double> recCoordinates = new ArrayList<>();
+        recCoordinates.add(-100.0);
+        recCoordinates.add(1.0);
+        Record record = new Record(1, recCoordinates);
+        ArrayList<Bounds> boundsForEachDimension = new ArrayList<>();
+        // Since we have to do with points as records we set low and upper to be same
+        for (int d = 0; d < MetaData.DIMENSIONS; d++)
+            boundsForEachDimension.add(new Bounds(record.getCoordinate(d),record.getCoordinate(d)));
+
+        Entry entry = new LeafEntry(record.getId(), boundsForEachDimension);
+        byte[] bytes = Main.serialize(entry);
+        System.out.println("Entry size in bytes: " + bytes.length);
+
 
         RStarTree rStarTree = new RStarTree(2);
 
-        ArrayList<Double> recCoordinates = new ArrayList<>();
+        recCoordinates = new ArrayList<>();
         recCoordinates.add(-100.0);
         recCoordinates.add(1.0);
         rStarTree.insertRecord(new Record(1, recCoordinates));
@@ -62,55 +76,59 @@ public class Main {
         recCoordinates.add(1.0);
         rStarTree.insertRecord(new Record(10, recCoordinates));
 
-//        recCoordinates = new ArrayList<>();
-//        recCoordinates.add(9.0);
-//        recCoordinates.add(0.9);
-//        rStarTree.insertRecord(new Record(1, recCoordinates));
-//
-//        recCoordinates = new ArrayList<>();
-//        recCoordinates.add(-1.0);
-//        recCoordinates.add(0.0);
-//        rStarTree.insertRecord(new Record(1, recCoordinates));
-//
-//        recCoordinates = new ArrayList<>();
-//        recCoordinates.add(23.0);
-//        recCoordinates.add(1.7);
-//        rStarTree.insertRecord(new Record(1, recCoordinates));
-//
-//        recCoordinates = new ArrayList<>();
-//        recCoordinates.add(12.0);
-//        recCoordinates.add(10.0);
-//        rStarTree.insertRecord(new Record(1, recCoordinates));
-//
-//        recCoordinates = new ArrayList<>();
-//        recCoordinates.add(20.0);
-//        recCoordinates.add(-2.0);
-//        rStarTree.insertRecord(new Record(1, recCoordinates));
-//
-//        recCoordinates = new ArrayList<>();
-//        recCoordinates.add(2.0);
-//        recCoordinates.add(-0.1);
-//        rStarTree.insertRecord(new Record(1, recCoordinates));
-//
-//        recCoordinates = new ArrayList<>();
-//        recCoordinates.add(-1.0);
-//        recCoordinates.add(-2.0);
-//        rStarTree.insertRecord(new Record(1, recCoordinates));
-//
-//        recCoordinates = new ArrayList<>();
-//        recCoordinates.add(1.0);
-//        recCoordinates.add(1.0);
-//        rStarTree.insertRecord(new Record(1, recCoordinates));
-//
-//        recCoordinates = new ArrayList<>();
-//        recCoordinates.add(15.0);
-//        recCoordinates.add(-1.0);
-//        rStarTree.insertRecord(new Record(1, recCoordinates));
+        recCoordinates = new ArrayList<>();
+        recCoordinates.add(9.0);
+        recCoordinates.add(0.9);
+        rStarTree.insertRecord(new Record(1, recCoordinates));
 
-        //rStarTree.testSplitting();
+        recCoordinates = new ArrayList<>();
+        recCoordinates.add(-1.0);
+        recCoordinates.add(0.0);
+        rStarTree.insertRecord(new Record(1, recCoordinates));
+
+        recCoordinates = new ArrayList<>();
+        recCoordinates.add(23.0);
+        recCoordinates.add(1.7);
+        rStarTree.insertRecord(new Record(1, recCoordinates));
+
+        recCoordinates = new ArrayList<>();
+        recCoordinates.add(12.0);
+        recCoordinates.add(10.0);
+        rStarTree.insertRecord(new Record(1, recCoordinates));
+
+        recCoordinates = new ArrayList<>();
+        recCoordinates.add(20.0);
+        recCoordinates.add(-2.0);
+        rStarTree.insertRecord(new Record(1, recCoordinates));
+
+        recCoordinates = new ArrayList<>();
+        recCoordinates.add(2.0);
+        recCoordinates.add(-0.1);
+        rStarTree.insertRecord(new Record(1, recCoordinates));
+
+        recCoordinates = new ArrayList<>();
+        recCoordinates.add(-1.0);
+        recCoordinates.add(-2.0);
+        rStarTree.insertRecord(new Record(1, recCoordinates));
+
+        recCoordinates = new ArrayList<>();
+        recCoordinates.add(1.0);
+        recCoordinates.add(1.0);
+        rStarTree.insertRecord(new Record(1, recCoordinates));
+
+        recCoordinates = new ArrayList<>();
+        recCoordinates.add(15.0);
+        recCoordinates.add(-1.0);
+        rStarTree.insertRecord(new Record(1, recCoordinates));
+
+//        recCoordinates = new ArrayList<>();
+//        recCoordinates.add(-136.0);
+//        recCoordinates.add(1.0);
+//        rStarTree.insertRecord(new Record(23, recCoordinates));
 
         Node node = rStarTree.getRoot();
-        printOverallNode(node);
+        for (Entry rootNodeEntry: node.getEntries())
+            printOverallNode(rootNodeEntry);
 
         // Range query testing
         System.out.print("Range Query: ");
@@ -149,13 +167,14 @@ public class Main {
 
     }
 
-    static private void printOverallNode(Node node){
+    static private void printOverallNode(Entry parentEntry) throws IOException, ClassNotFoundException {
         // Prints overall node bb and entries
         // overall rectangle
-        if (node.getOverallBoundingBox() != null)
+
+        if (parentEntry.getBoundingBox()!= null)
         {
             System.out.print("Overall bounding box:  ");
-            for (Bounds bounds : node.getOverallBoundingBox().getBounds())
+            for (Bounds bounds : parentEntry.getBoundingBox().getBounds())
                 System.out.print(bounds.getLower() + ", " + bounds.getUpper() + "      ");
 
             System.out.println();System.out.println();
@@ -163,18 +182,26 @@ public class Main {
             System.out.println();
 
             // root-sub rectangles
-            for (Entry entry : node.getEntries())
+            for (Entry entry : parentEntry.getChildNode().getEntries())
             {
-                System.out.println("Current level: " + node.getLevel());
+
+//                Node asdasd = entry.getChildNode();
+//                entry.setChildNode(null);
+//                byte[]  bytes = serialize(entry);
+//                System.out.println("Entry size in bytes: " + bytes.length);
+//               // entry = (Entry)deserialize(bytes);
+//                entry.setChildNode(asdasd);
+
+                System.out.println("Current level: " + parentEntry.getChildNode().getLevel());
                 for (Bounds bounds : entry.getBoundingBox().getBounds())
                     System.out.print(bounds.getLower() + ", " + bounds.getUpper() + "      ");
 
                 System.out.println();
 
-                if (entry.getChildNode()!=null)
+                if (entry.getChildNode()!= null)
                 {
                     System.out.println("Going inside the node...");
-                    printOverallNode(entry.getChildNode());
+                    printOverallNode(entry);
                 }
 
                 System.out.println();
@@ -183,76 +210,6 @@ public class Main {
             System.out.println("Leaving the node...");
         }
     }
-
-
-
-//        // In order to find the size of record in bytes
-//        byte[] recordInBytes = serialize(new Record(1231231,123.2,123.1));
-//        int sizeOfRecord = recordInBytes.length;
-//        System.out.println(sizeOfRecord);
-//
-//        Record rec = new Record(1231231,123.2,123.1);
-//        ArrayList<Integer> asd= new ArrayList<>();
-//        byte[] recordInBytes2= serialize(rec);
-//        sizeOfRecord = recordInBytes2.length;
-//        System.out.println(sizeOfRecord);
-//
-//        // In order how many records fit a block
-//        int maxRecordsInBlock = BLOCK_SIZE/sizeOfRecord;
-//
-//        byte[][] records = new byte[maxRecordsInBlock][sizeOfRecord];
-//        for(int i = 0; i < maxRecordsInBlock; i++){
-//            records[i] = serialize(new Record(i,123.2,123.1));
-//        }
-
-
-//        for(int i = 0; i < maxRecordsInBlock; i++){
-//            Record record1 = (Record)deserialize(records[i]);
-//            System.out.println(record1);
-//        }
-
-
-//        // Copying from records to block
-//        byte[] block = new byte[BLOCK_SIZE];
-//        for(int i = 0; i < maxRecordsInBlock; i++)
-//            System.arraycopy(records[i], 0, block, i * sizeOfRecord, sizeOfRecord);
-//
-//        System.out.print(block.length);
-//
-//        // Copying from block to records
-//        records = new byte[maxRecordsInBlock][sizeOfRecord];
-//        for(int i = 0; i < maxRecordsInBlock; i++)
-//            System.arraycopy(block, i * sizeOfRecord, records[i], 0, sizeOfRecord);
-//
-//        // Printing
-//        for(int i = 0; i < maxRecordsInBlock; i++){
-//            Record record1 = (Record)deserialize(records[i]);
-//            System.out.println(record1);
-//        }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 //        BufferedReader csvReader = (new BufferedReader(new FileReader(PATH_TO_CSV))); // BufferedReader used to read the data from the csv file
@@ -332,14 +289,14 @@ public class Main {
 //                bis.close();
 //        }
 
-    private static byte[] serialize(Object obj) throws IOException {
+    static byte[] serialize(Object obj) throws IOException {
         ByteArrayOutputStream out = new ByteArrayOutputStream();
         ObjectOutputStream os = new ObjectOutputStream(out);
         os.writeObject(obj);
         return out.toByteArray();
     }
 
-     private static Object deserialize(byte[] data) throws IOException, ClassNotFoundException {
+    static Object deserialize(byte[] data) throws IOException, ClassNotFoundException {
         ByteArrayInputStream in = new ByteArrayInputStream(data);
         ObjectInputStream is = new ObjectInputStream(in);
         return is.readObject();

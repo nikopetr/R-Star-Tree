@@ -1,10 +1,10 @@
-import java.lang.reflect.Array;
+import java.io.Serializable;
 import java.util.ArrayList;
 
 import static java.lang.Math.abs;
 import static java.lang.Math.sqrt;
 
-class BoundingBox {
+class BoundingBox implements Serializable {
     private ArrayList<Bounds> bounds;
     private Double area;
     private Double margin;
@@ -12,28 +12,29 @@ class BoundingBox {
 
     BoundingBox(ArrayList<Bounds> bounds) {
         this.bounds = bounds;
-        this.area = null;
-        this.margin = null;
-        this.center = null;
+        this.area = calculateArea();
+        this.margin = calculateMargin();
+        this.center = getCenter();
     }
 
     ArrayList<Bounds> getBounds() {
         return bounds;
     }
 
+    //TODO check with big input if return margin works fine
     double getArea() {
         // If area is not yet initialized, find the area
-        if (area == null) {
+        if (area == null)
             area = calculateArea();
-        }
+
         return area;
     }
 
     double getMargin() {
         // If margin is not yet initialized, find the margin
-        if (margin == null) {
+        if (margin == null)
             margin = calculateMargin();
-        }
+
         return margin;
     }
 
@@ -96,6 +97,7 @@ class BoundingBox {
         {
             double overlapD = Math.min(boundingBoxA.getBounds().get(d).getUpper(), boundingBoxB.getBounds().get(d).getUpper())
                     - Math.max(boundingBoxA.getBounds().get(d).getLower(), boundingBoxB.getBounds().get(d).getLower());
+
             if (overlapD < 0) //TODO check if "=" is needed or not
                 return false;
         }
@@ -110,6 +112,7 @@ class BoundingBox {
         {
             double overlapD = Math.min(boundingBoxA.getBounds().get(d).getUpper(), boundingBoxB.getBounds().get(d).getUpper())
                     - Math.max(boundingBoxA.getBounds().get(d).getLower(), boundingBoxB.getBounds().get(d).getLower());
+
             if (overlapD <= 0) //TODO check if "=" is needed or not
                 return 0; // No overlap, return 0
             else

@@ -1,22 +1,17 @@
-class Entry {
+import java.io.Serializable;
+import java.util.ArrayList;
+
+class Entry implements Serializable {
     private BoundingBox boundingBox;
     private Node childNode;
 
     Entry(Node childNode) {
         this.childNode = childNode;
-        this.boundingBox = childNode.getOverallBoundingBox();
+        adjustBBToFitEntries(childNode.getEntries());
     }
 
     Entry(BoundingBox boundingBox)
     {
-        this.boundingBox = boundingBox;
-    }
-
-    void setChildNode(Node childNode) {
-        this.childNode = childNode;
-    }
-
-    void setBoundingBox(BoundingBox boundingBox) {
         this.boundingBox = boundingBox;
     }
 
@@ -26,5 +21,13 @@ class Entry {
 
     Node getChildNode() {
         return childNode;
+    }
+
+    void adjustBBToFitEntries(ArrayList<Entry> entries){
+        boundingBox = new BoundingBox(Bounds.findMinimumBounds(entries));
+    }
+
+    void adjustBBToFitEntry(Entry entry){
+        boundingBox = new BoundingBox(Bounds.findMinimumBounds(boundingBox,entry.getBoundingBox()));
     }
 }

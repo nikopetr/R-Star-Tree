@@ -40,7 +40,7 @@ class EntryComparator {
 
             double areaEnlargementA = newBoundingBoxA.getArea() - entryA.getBoundingBox().getArea();
             double areaEnlargementB = newBoundingBoxB.getArea() - entryB.getBoundingBox().getArea();
-            ;
+
             if (areaEnlargementA < 0 || areaEnlargementB < 0)
                 throw new IllegalStateException("The enlargement cannot be a negative number");
 
@@ -75,7 +75,7 @@ class EntryComparator {
             double overlapEntryB = calculateEntryOverlapValue(entryB, entryB.getBoundingBox());
             Entry newEntryB = new Entry(new BoundingBox(Bounds.findMinimumBounds(entryB.getBoundingBox(),boundingBoxToAdd))); // The entry's bounding box after it includes the new bounding box
             double overlapNewEntryB = calculateEntryOverlapValue(entryB, newEntryB.getBoundingBox()); // Using the previous entry signature in order to check for equality
-            double overlapEnlargementEntryB =  overlapNewEntryB - overlapEntryB ;
+            double overlapEnlargementEntryB = overlapNewEntryB - overlapEntryB ;
 
             if (overlapEnlargementEntryA < 0 || overlapEnlargementEntryB < 0)
                 throw new IllegalStateException("The enlargement cannot be a negative number");

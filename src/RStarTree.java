@@ -16,14 +16,14 @@ class RStarTree {
         this.root = new Node(1); // We are increasing the size from the root, the root (top level) will always have the highest level
         this.totalLevels = 1;
 
-        ArrayList<Bounds> initialBounds = new ArrayList<>();
-        // For each dimension finds the max interval
-        for (int d = 0; d < MetaData.DIMENSIONS; d++)
-        {
-            Bounds axisBound = new Bounds(-Double.MAX_VALUE,Double.MAX_VALUE);
-            initialBounds.add(axisBound);
-        }
-        root.setOverallBoundingBox(new BoundingBox(initialBounds));
+//        ArrayList<Bounds> initialBounds = new ArrayList<>();
+//        // For each dimension finds the max interval
+//        for (int d = 0; d < MetaData.DIMENSIONS; d++)
+//        {
+//            Bounds axisBound = new Bounds(-Double.MAX_VALUE,Double.MAX_VALUE);
+//            initialBounds.add(axisBound);
+//        }
+//        root.setOverallBoundingBox(new BoundingBox(initialBounds));
 
     }
 
@@ -65,23 +65,20 @@ class RStarTree {
     private Entry insert(Entry parentEntry, Entry dataEntry, int levelToAdd) {
 
         Node childNode;
+
         if(parentEntry == null)
             childNode = root;
         else
+        {
+            // Updating-Adjusting the bounding box of the Entry that points to the Updated Node
+            parentEntry.adjustBBToFitEntry(dataEntry);
             childNode = parentEntry.getChildNode();
-
-        // Adjusting bounding box of the Node to fit the dataEntry
-        childNode.adjustBoundingBoxToIncludeEntry(dataEntry);
+        }
 
         // CS2: If we're at a leaf (or the level we wanted to insert the dataEntry), then use that level
         // I2: If N has less than M items, accommodate E in N
         if (childNode.getLevel() == levelToAdd)
-        {
             childNode.insertEntry(dataEntry);
-            // Updating-Adjusting the bounding box of the Entry that points to the Updated Node
-            if(childNode != root && parentEntry != null)
-                parentEntry.setBoundingBox(childNode.getOverallBoundingBox());
-        }
 
         else {
             // I1: Invoke ChooseSubtree. with the level as a parameter,
@@ -134,14 +131,32 @@ class RStarTree {
                 // then area enlargement needed to include the new
                 // data rectangle
 
+                // TODO remove previus implementation if eveyth is ok
                 // Let A be the group of the first p entries
-//                node.getEntries().subList(0, CHOOSE_SUBTREE_P_ENTRIES - 1).sort(new EntryComparator.EntryAreaEnlargementComparator(boundingBoxToAdd));
-                node.getEntries().sort(new EntryComparator.EntryAreaEnlargementComparator(boundingBoxToAdd));
+                // node.getEntries().sort(new EntryComparator.EntryAreaEnlargementComparator(boundingBoxToAdd));
+
+
+                // Let A be the group of the first p entries
+                ArrayList<EntryAreaEnlargementPair> entryAreaEnlargementPairs = new ArrayList<>();
+
+                for (Entry entry: node.getEntries())
+                {
+                    BoundingBox newBoundingBoxA = new BoundingBox(Bounds.findMinimumBounds(entry.getBoundingBox(),boundingBoxToAdd));
+                    double areaEnlargementA = newBoundingBoxA.getArea() - entry.getBoundingBox().getArea();
+                    entryAreaEnlargementPairs.add(new EntryAreaEnlargementPair(entry,areaEnlargementA));
+                }
+
+                entryAreaEnlargementPairs.sort(EntryAreaEnlargementPair::compareTo);
+
+                ArrayList<Entry> sortedByEnlargementEntries = new ArrayList<>();
+                for (EntryAreaEnlargementPair pair: entryAreaEnlargementPairs)
+                    sortedByEnlargementEntries.add(pair.getEntry());
+
 
                 // From the items in A, considering all items in
                 // N, choose the entry whose rectangle needs least
                 // overlap enlargement
-                bestEntry = Collections.min(node.getEntries().subList(0, CHOOSE_SUBTREE_P_ENTRIES), new EntryComparator.EntryOverlapEnlargementComparator(boundingBoxToAdd,node.getEntries()));
+                bestEntry = Collections.min(sortedByEnlargementEntries.subList(0, CHOOSE_SUBTREE_P_ENTRIES), new EntryComparator.EntryOverlapEnlargementComparator(boundingBoxToAdd,node.getEntries()));
 
                 return bestEntry;
             }
@@ -162,7 +177,22 @@ class RStarTree {
         // area enlargement to include the new data
         // rectangle. Resolve ties by choosing the leaf
         // with the rectangle of smallest area
-        bestEntry = Collections.min(node.getEntries(), new EntryComparator.EntryAreaEnlargementComparator(boundingBoxToAdd));
+
+        ArrayList<EntryAreaEnlargementPair> entryAreaEnlargementPairs = new ArrayList<>();
+        for (Entry entry: node.getEntries())
+        {
+            BoundingBox newBoundingBoxA = new BoundingBox(Bounds.findMinimumBounds(entry.getBoundingBox(),boundingBoxToAdd));
+            double areaEnlargementA = newBoundingBoxA.getArea() - entry.getBoundingBox().getArea();
+            entryAreaEnlargementPairs.add(new EntryAreaEnlargementPair(entry,areaEnlargementA));
+        }
+
+        bestEntry = Collections.min(entryAreaEnlargementPairs,EntryAreaEnlargementPair::compareTo).getEntry();
+
+        // TODO remove previus implementation if eveyth is ok
+//        ArrayList<Entry> sortedByEnlargementEntries = new ArrayList<>();
+//        for (EntryAreaEnlargementPair pair: entryAreaEnlargementPairs)
+//            sortedByEnlargementEntries.add(pair.getEntry());
+//        bestEntry = Collections.min(node.getEntries(), new EntryComparator.EntryAreaEnlargementComparator(boundingBoxToAdd));
         return bestEntry;
     }
 
@@ -198,7 +228,7 @@ class RStarTree {
 
         // Updating-Adjusting the bounding box of the Entry that points to the Updated previous Node
         if (childNode != root && parentEntry != null)
-            parentEntry.setBoundingBox(childNode.getOverallBoundingBox());
+            parentEntry.adjustBBToFitEntries(childNode.getEntries());
 
         // The new Node that occurred from the split
         Node splitNode = splitNodes.get(1);
@@ -233,7 +263,7 @@ class RStarTree {
 
         // RI2: Sort the items in INCREASING order (since then we use close reinsert) of their distances
         // computed in RI1
-        childNode.getEntries().sort(new EntryComparator.EntryDistanceFromCenterComparator(childNode.getOverallBoundingBox()));
+        childNode.getEntries().sort(new EntryComparator.EntryDistanceFromCenterComparator(parentEntry.getBoundingBox()));
         ArrayList<Entry> removedEntries = new ArrayList<>(childNode.getEntries().subList(childNode.getEntries().size()-REINSERT_P_ENTRIES,childNode.getEntries().size()));
 
         // RI3: Remove the last p items from N (since then we use close reinsert) and adjust the bounding rectangle of N
@@ -241,8 +271,8 @@ class RStarTree {
             childNode.getEntries().remove(childNode.getEntries().size()-1);
 
         // Updating bounding box of node and to the parent entry
-        childNode.setOverallBoundingBox(new BoundingBox(Bounds.findMinimumBounds(childNode.getEntries())));
-        parentEntry.setBoundingBox(childNode.getOverallBoundingBox());
+       // childNode.setOverallBoundingBox(new BoundingBox(Bounds.findMinimumBounds(childNode.getEntries())));
+        parentEntry.adjustBBToFitEntries(childNode.getEntries());
 
         // RI4: In the sort, defined in RI2, starting with the
         // minimum distance (= close reinsert), invoke Insert
@@ -253,58 +283,4 @@ class RStarTree {
         for (Entry entry : removedEntries)
             insert(null,entry,childNode.getLevel());
     }
-
-//    void testSplitting() {
-//        Node aNode = new Node(1);
-//        int[][] rec1 = {{15, 15}, {15, 15}};
-//        int[][] rec2 = {{1, 1}, {1, 2}};
-//        int[][] rec3 = {{20500, 26000}, {1,10}};
-//        int[][] rec4 = {{1002, 1006}, {1010, 1011}};
-//        int[][] rec5 = {{1010, 1011}, {1010, 1011}};
-//
-//        ArrayList<int[][]> boundsOfRects = new ArrayList<>();
-//        boundsOfRects.add(rec1);
-//        boundsOfRects.add(rec2);
-//        boundsOfRects.add(rec3);
-//        boundsOfRects.add(rec4);
-//        boundsOfRects.add(rec5);
-//
-//        int index = 0;
-//        for (int[][] boundsOfRect : boundsOfRects)
-//        {
-//            ArrayList<Bounds> boundsRect = new ArrayList<>();
-//            for (int d = 0; d < MetaData.DIMENSIONS; d++)
-//                boundsRect.add(new Bounds(boundsOfRect[d][0],boundsOfRect[d][1]));
-//
-//            aNode.insertEntry(new LeafEntry(index++, boundsRect));
-//        }
-//
-//
-//        Node splitNode = split(aNode);
-//        ArrayList<Node> splitNodes = new ArrayList<>();
-//        splitNodes.add(aNode);
-//        splitNodes.add(splitNode);
-//
-//        System.out.println("Testing split:");
-//        for(Node node : splitNodes)
-//        {
-//            System.out.println("Node: ");
-//
-//            for (Entry entry : node.getEntries())
-//            {
-//                System.out.print(((LeafEntry)entry).getRecordId() + ":   ");
-//                for (Bounds bounds : entry.getBoundingBox().getBounds())
-//                {
-//                    System.out.print(bounds.getLower() + ", " + bounds.getUpper() + "      ");
-//                }
-//                System.out.println();
-//            }
-//            System.out.println();
-//        }
-//
-//        for (Bounds bounds : splitNodes.get(0).getOverallBoundingBox().getBounds())
-//        {
-//            System.out.print(bounds.getLower() + ", " + bounds.getUpper() + "      ");
-//        }
-//    }
 }

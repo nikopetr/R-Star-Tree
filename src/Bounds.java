@@ -1,7 +1,8 @@
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collections;
 
-class Bounds {
+class Bounds  implements Serializable {
     private double lower; // Representing the lower value of the interval
     private double upper; // Representing the upper value of the interval
 

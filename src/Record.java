@@ -14,7 +14,7 @@ class Record implements Serializable {
         return id;
     }
 
-    public ArrayList<Double> getCoordinates() {
+    ArrayList<Double> getCoordinates() {
         return coordinates;
     }
 
