@@ -1,12 +1,10 @@
-import javafx.util.Pair;
-
 import java.util.*;
 
 class NearestNeighboursQuery extends Query {
     private ArrayList<Double> searchPoint; // coordinates of point used for radius queries
     private double searchPointRadius; // The reference radius that is used as a bound
     private int k; // Number of nearest neighbours to be found
-    private PriorityQueue<Pair<Long, Double>> nearestNeighbours;
+    private PriorityQueue<IdDistancePair> nearestNeighbours;
 
     NearestNeighboursQuery(ArrayList<Double> searchPoint, int k) {
         if (k < 0)
@@ -14,10 +12,10 @@ class NearestNeighboursQuery extends Query {
         this.searchPoint = searchPoint;
         this.k = k;
         this.searchPointRadius = Double.MAX_VALUE;
-        this.nearestNeighbours = new PriorityQueue<>(k, new Comparator<Pair<Long, Double>>() {
+        this.nearestNeighbours = new PriorityQueue<>(k, new Comparator<IdDistancePair>() {
             @Override
-            public int compare(Pair<Long, Double> recordDistancePairA, Pair<Long, Double> recordDistancePairB) {
-                return recordDistancePairB.getValue().compareTo(recordDistancePairA.getValue()); // In order to make a MAX heap
+            public int compare(IdDistancePair recordDistancePairA, IdDistancePair recordDistancePairB) {
+                return Double.compare(recordDistancePairB.getDistanceFromItem(),recordDistancePairA.getDistanceFromItem()); // In order to make a MAX heap
             }
         });
     }
@@ -29,8 +27,8 @@ class NearestNeighboursQuery extends Query {
         findNeighbours(node);
         while (nearestNeighbours.size() != 0)
         {
-            Pair<Long, Double> recordDistancePair = nearestNeighbours.poll();
-            qualifyingRecordIds.add(recordDistancePair.getKey());
+            IdDistancePair recordDistancePair = nearestNeighbours.poll();
+            qualifyingRecordIds.add(recordDistancePair.getRecordId());
         }
         return qualifyingRecordIds;
     }
@@ -53,8 +51,8 @@ class NearestNeighboursQuery extends Query {
                     nearestNeighbours.poll();
                 LeafEntry leafEntry = (LeafEntry) node.getEntries().get(i);
                 double minDistance = leafEntry.getBoundingBox().findMinDistanceFromPoint(searchPoint);
-                nearestNeighbours.add(new Pair<>(leafEntry.getRecordId(), minDistance));
-                searchPointRadius = nearestNeighbours.peek().getValue();
+                nearestNeighbours.add(new IdDistancePair(leafEntry.getRecordId(), minDistance));
+                searchPointRadius = nearestNeighbours.peek().getDistanceFromItem();
                 i++;
             }
 
