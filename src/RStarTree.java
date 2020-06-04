@@ -13,18 +13,24 @@ class RStarTree {
 
     RStarTree(int dimensions) {
         MetaData.DIMENSIONS = dimensions;
+
+
+       int blockRecords = MetaData.getMaxRecordsInBlock();
+        ArrayList<Record> records = new ArrayList<>();
+
+        for (int i = 0; i < blockRecords; i++)
+        {
+            ArrayList<Double> coordinateForEachDimension = new ArrayList<>();
+            for (int d = 0; d < MetaData.DIMENSIONS; d++)
+                coordinateForEachDimension.add(0.0);
+            records.add(new Record(1,coordinateForEachDimension));
+        }
+
+        MetaData.writeDataFileBlock(records);
+
+
         this.root = new Node(1); // We are increasing the size from the root, the root (top level) will always have the highest level
         this.totalLevels = 1;
-
-//        ArrayList<Bounds> initialBounds = new ArrayList<>();
-//        // For each dimension finds the max interval
-//        for (int d = 0; d < MetaData.DIMENSIONS; d++)
-//        {
-//            Bounds axisBound = new Bounds(-Double.MAX_VALUE,Double.MAX_VALUE);
-//            initialBounds.add(axisBound);
-//        }
-//        root.setOverallBoundingBox(new BoundingBox(initialBounds));
-
     }
 
     Node getRoot() { //TODO DELETE THIS AFTER TESTING

@@ -9,24 +9,87 @@ public class Main {
 
     public static void main(String[] args) throws IOException, ClassNotFoundException {
 
-        MetaData.DIMENSIONS = 2 ;
-        ArrayList<Double> recCoordinates = new ArrayList<>();
-        recCoordinates.add(-100.0);
-        recCoordinates.add(1.0);
-        Record record = new Record(1, recCoordinates);
-        ArrayList<Bounds> boundsForEachDimension = new ArrayList<>();
-        // Since we have to do with points as records we set low and upper to be same
-        for (int d = 0; d < MetaData.DIMENSIONS; d++)
-            boundsForEachDimension.add(new Bounds(record.getCoordinate(d),record.getCoordinate(d)));
 
-        Entry entry = new LeafEntry(record.getId(), boundsForEachDimension);
-        byte[] bytes = Main.serialize(entry);
-        System.out.println("Entry size in bytes: " + bytes.length);
-
+//        BufferedReader csvReader = (new BufferedReader(new FileReader(PATH_TO_CSV))); // BufferedReader used to read the data from the csv file
+//        BufferedOutputStream bufferedOutputStream = new BufferedOutputStream(new FileOutputStream(PATH_TO_DATAFILE)); // BufferedOutputStream used to save the data in blocks to the datafile
+//        byte[] bFile = new byte[BLOCK_SIZE]; // Buffer of bytes used to temporally save each block
+//        int totalBytesRead = 0;
+//
+//        int count = 0;
+//        int temp=0;
+//        ArrayList<Integer> arrayList = new ArrayList<>();
+//
+//        String row; // String used to read each line of the csv file
+//        while ((row = csvReader.readLine()) != null)
+//        {
+//            count++;
+//            System.arraycopy(row.getBytes(), 0, bFile, totalBytesRead, row.getBytes().length); // Copying the data from the row read to the buffer
+//            totalBytesRead += row.getBytes().length;
+//            if (totalBytesRead + row.getBytes().length >= BLOCK_SIZE)
+//            {
+//                bufferedOutputStream.write(bFile);
+//                bFile = new byte[BLOCK_SIZE]; //Block is 32KB
+//                totalBytesRead = 0;
+//
+//                arrayList.add(count-temp);
+//                temp=count;
+//            }
+//        }
+//        arrayList.add(count-temp);
+//        // Writing the rest of the records
+//        bufferedOutputStream.write(bFile);
+//
+//        bufferedOutputStream.close();
+//        csvReader.close();
+//
+//        System.out.println("Total records : " + count);
+//
+//        for(int i=0; i < arrayList.size(); i++){
+//            System.out.println("Block " + (i+1) + " has " + arrayList.get(i) + " records");
+//        }
+//
+//        // For reading the blocks
+//        InputStream inStream = null;
+//        BufferedInputStream bis;
+//        bis = null;
+//        try {
+//            // open input stream test.txt for reading purpose.
+//            inStream = new FileInputStream(PATH_TO_DATAFILE);
+//
+//            // input stream is converted to buffered input stream
+//            bis = new BufferedInputStream(inStream);
+//
+//            // read number of bytes available
+//            int numByte = bis.available();
+//
+//            // byte array declared
+//            byte[] buf = new byte[numByte];
+//
+//            int bytesRead = 0;
+//            while ((bytesRead = bis.read(buf,0,BLOCK_SIZE)) != -1)
+//            {
+//                // for each byte in buf
+//                for (byte b : buf) {
+//                    //System.out.print((char)b);
+//                }
+//
+//                System.out.println(bytesRead);
+//            }
+//
+//
+//        } catch(Exception e) {
+//            e.printStackTrace();
+//        } finally {
+//            // releases any system resources associated with the stream
+//            if(inStream!=null)
+//                inStream.close();
+//            if(bis!=null)
+//                bis.close();
+//        }
 
         RStarTree rStarTree = new RStarTree(2);
 
-        recCoordinates = new ArrayList<>();
+        ArrayList<Double> recCoordinates = new ArrayList<>();
         recCoordinates.add(-100.0);
         recCoordinates.add(1.0);
         rStarTree.insertRecord(new Record(1, recCoordinates));
@@ -211,84 +274,6 @@ public class Main {
         }
     }
 
-
-//        BufferedReader csvReader = (new BufferedReader(new FileReader(PATH_TO_CSV))); // BufferedReader used to read the data from the csv file
-//        BufferedOutputStream bufferedOutputStream = new BufferedOutputStream(new FileOutputStream(PATH_TO_DATAFILE)); // BufferedOutputStream used to save the data in blocks to the datafile
-//        byte[] bFile = new byte[BLOCK_SIZE]; // Buffer of bytes used to temporally save each block
-//        int totalBytesRead = 0;
-//
-//        int count = 0;
-//        int temp=0;
-//        ArrayList<Integer> arrayList = new ArrayList<>();
-//
-//        String row; // String used to read each line of the csv file
-//        while ((row = csvReader.readLine()) != null)
-//        {
-//            count++;
-//            System.arraycopy(row.getBytes(), 0, bFile, totalBytesRead, row.getBytes().length); // Copying the data from the row read to the buffer
-//            totalBytesRead += row.getBytes().length;
-//            if (totalBytesRead + row.getBytes().length >= BLOCK_SIZE)
-//            {
-//                bufferedOutputStream.write(bFile);
-//                bFile = new byte[BLOCK_SIZE]; //Block is 32KB
-//                totalBytesRead = 0;
-//
-//                arrayList.add(count-temp);
-//                temp=count;
-//            }
-//        }
-//        arrayList.add(count-temp);
-//        // Writing the rest of the records
-//        bufferedOutputStream.write(bFile);
-//
-//        bufferedOutputStream.close();
-//        csvReader.close();
-//
-//        System.out.println("Total records : " + count);
-//
-//        for(int i=0; i < arrayList.size(); i++){
-//            System.out.println("Block " + (i+1) + " has " + arrayList.get(i) + " records");
-//        }
-//
-//        // For reading the blocks
-//        InputStream inStream = null;
-//        BufferedInputStream bis;
-//        bis = null;
-//        try {
-//            // open input stream test.txt for reading purpose.
-//            inStream = new FileInputStream(PATH_TO_DATAFILE);
-//
-//            // input stream is converted to buffered input stream
-//            bis = new BufferedInputStream(inStream);
-//
-//            // read number of bytes available
-//            int numByte = bis.available();
-//
-//            // byte array declared
-//            byte[] buf = new byte[numByte];
-//
-//            int bytesRead = 0;
-//            while ((bytesRead = bis.read(buf,0,BLOCK_SIZE)) != -1)
-//            {
-//                // for each byte in buf
-//                for (byte b : buf) {
-//                    //System.out.print((char)b);
-//                }
-//
-//                System.out.println(bytesRead);
-//            }
-//
-//
-//        } catch(Exception e) {
-//            e.printStackTrace();
-//        } finally {
-//            // releases any system resources associated with the stream
-//            if(inStream!=null)
-//                inStream.close();
-//            if(bis!=null)
-//                bis.close();
-//        }
-
     static byte[] serialize(Object obj) throws IOException {
         ByteArrayOutputStream out = new ByteArrayOutputStream();
         ObjectOutputStream os = new ObjectOutputStream(out);
@@ -301,5 +286,4 @@ public class Main {
         ObjectInputStream is = new ObjectInputStream(in);
         return is.readObject();
     }
-
 }

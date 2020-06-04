@@ -2,7 +2,7 @@ import java.io.Serializable;
 import java.util.ArrayList;
 
 
-class Node  implements Serializable {
+class Node implements Serializable {
     static final int MAX_ENTRIES = 4;
     private static final int MINIMUM_ENTRIES = (int)(0.4 * MAX_ENTRIES); // Setting m to 40%
 
@@ -58,7 +58,8 @@ private ArrayList<Distribution> chooseSplitAxis() {
             ArrayList<Entry> entriesSortedByUpper = new ArrayList<>();
             ArrayList<Entry> entriesSortedByLower = new ArrayList<>();
 
-            for (Entry entry : entries) {
+            for (Entry entry : entries)
+            {
                 entriesSortedByLower.add(entry);
                 entriesSortedByUpper.add(entry);
             }
