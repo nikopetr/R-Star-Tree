@@ -15,7 +15,7 @@ public class Main {
         for (int i = 0; i<MetaData.getTotalBlocksInDatafile(); i++)
         {
             records = MetaData.readDataFileBlock(i);
-            for (Record record: records)
+            for (Record record : records)
                 rStarTree.insertRecord(record);
         }
 
