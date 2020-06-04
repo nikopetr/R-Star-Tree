@@ -11,24 +11,7 @@ class RStarTree {
     private int totalLevels; // The total levels of the tree
     private boolean[] levelsInserted; // Used to know which levels have already called overFlowTreatment on a data insertion procedure
 
-    RStarTree(int dimensions) {
-        MetaData.DIMENSIONS = dimensions;
-
-
-       int blockRecords = MetaData.getMaxRecordsInBlock();
-        ArrayList<Record> records = new ArrayList<>();
-
-        for (int i = 0; i < blockRecords; i++)
-        {
-            ArrayList<Double> coordinateForEachDimension = new ArrayList<>();
-            for (int d = 0; d < MetaData.DIMENSIONS; d++)
-                coordinateForEachDimension.add(0.0);
-            records.add(new Record(1,coordinateForEachDimension));
-        }
-
-        MetaData.writeDataFileBlock(records);
-
-
+    RStarTree() {
         this.root = new Node(1); // We are increasing the size from the root, the root (top level) will always have the highest level
         this.totalLevels = 1;
     }

@@ -2,187 +2,117 @@ import java.io.*;
 import java.util.ArrayList;
 
 public class Main {
-
-    private static final String PATH_TO_CSV = "test.csv";
-    private static final String PATH_TO_DATAFILE = "datafile.dat";
-    private static final int BLOCK_SIZE = 32 * 1024; // Each Block is 32KB
-
     public static void main(String[] args) throws IOException, ClassNotFoundException {
 
+        System.out.println("starting");
 
-//        BufferedReader csvReader = (new BufferedReader(new FileReader(PATH_TO_CSV))); // BufferedReader used to read the data from the csv file
-//        BufferedOutputStream bufferedOutputStream = new BufferedOutputStream(new FileOutputStream(PATH_TO_DATAFILE)); // BufferedOutputStream used to save the data in blocks to the datafile
-//        byte[] bFile = new byte[BLOCK_SIZE]; // Buffer of bytes used to temporally save each block
-//        int totalBytesRead = 0;
+        MetaData.DIMENSIONS = 2;
+        MetaData.initializeDataFile();
+        ArrayList<Record> records;
+
+        RStarTree rStarTree = new RStarTree();
+
+        for (int i = 0; i<MetaData.getTotalBlocksInDatafile(); i++)
+        {
+            records = MetaData.readDataFileBlock(i);
+            for (Record record: records)
+                rStarTree.insertRecord(record);
+        }
+
+//        ArrayList<Double> recCoordinates = new ArrayList<>();
+//        recCoordinates.add(-100.0);
+//        recCoordinates.add(1.0);
+//        rStarTree.insertRecord(new Record(1, recCoordinates));
 //
-//        int count = 0;
-//        int temp=0;
-//        ArrayList<Integer> arrayList = new ArrayList<>();
+//        recCoordinates = new ArrayList<>();
+//        recCoordinates.add(-80.0);
+//        recCoordinates.add(-1.0);
+//        rStarTree.insertRecord(new Record(2, recCoordinates));
 //
-//        String row; // String used to read each line of the csv file
-//        while ((row = csvReader.readLine()) != null)
-//        {
-//            count++;
-//            System.arraycopy(row.getBytes(), 0, bFile, totalBytesRead, row.getBytes().length); // Copying the data from the row read to the buffer
-//            totalBytesRead += row.getBytes().length;
-//            if (totalBytesRead + row.getBytes().length >= BLOCK_SIZE)
-//            {
-//                bufferedOutputStream.write(bFile);
-//                bFile = new byte[BLOCK_SIZE]; //Block is 32KB
-//                totalBytesRead = 0;
+//        recCoordinates = new ArrayList<>();
+//        recCoordinates.add(4.0);
+//        recCoordinates.add(1.0);
+//        rStarTree.insertRecord(new Record(3, recCoordinates));
 //
-//                arrayList.add(count-temp);
-//                temp=count;
-//            }
-//        }
-//        arrayList.add(count-temp);
-//        // Writing the rest of the records
-//        bufferedOutputStream.write(bFile);
+//        recCoordinates = new ArrayList<>();
+//        recCoordinates.add(5.0);
+//        recCoordinates.add(0.0);
+//        rStarTree.insertRecord(new Record(4, recCoordinates));
 //
-//        bufferedOutputStream.close();
-//        csvReader.close();
+//        recCoordinates = new ArrayList<>();
+//        recCoordinates.add(14.0);
+//        recCoordinates.add(1.0);
+//        rStarTree.insertRecord(new Record(5, recCoordinates));
 //
-//        System.out.println("Total records : " + count);
+//        recCoordinates = new ArrayList<>();
+//        recCoordinates.add(2.0);
+//        recCoordinates.add(1.0);
+//        rStarTree.insertRecord(new Record(6, recCoordinates));
 //
-//        for(int i=0; i < arrayList.size(); i++){
-//            System.out.println("Block " + (i+1) + " has " + arrayList.get(i) + " records");
-//        }
+//        recCoordinates = new ArrayList<>();
+//        recCoordinates.add(2.0);
+//        recCoordinates.add(0.1);
+//        rStarTree.insertRecord(new Record(7, recCoordinates));
 //
-//        // For reading the blocks
-//        InputStream inStream = null;
-//        BufferedInputStream bis;
-//        bis = null;
-//        try {
-//            // open input stream test.txt for reading purpose.
-//            inStream = new FileInputStream(PATH_TO_DATAFILE);
+//        recCoordinates = new ArrayList<>();
+//        recCoordinates.add(-101.0);
+//        recCoordinates.add(0.1);
+//        rStarTree.insertRecord(new Record(8, recCoordinates));
 //
-//            // input stream is converted to buffered input stream
-//            bis = new BufferedInputStream(inStream);
+//        recCoordinates = new ArrayList<>();
+//        recCoordinates.add(-102.0);
+//        recCoordinates.add(0.1);
+//        rStarTree.insertRecord(new Record(9, recCoordinates));
 //
-//            // read number of bytes available
-//            int numByte = bis.available();
+//        recCoordinates = new ArrayList<>();
+//        recCoordinates.add(-125.0);
+//        recCoordinates.add(1.0);
+//        rStarTree.insertRecord(new Record(10, recCoordinates));
 //
-//            // byte array declared
-//            byte[] buf = new byte[numByte];
+//        recCoordinates = new ArrayList<>();
+//        recCoordinates.add(9.0);
+//        recCoordinates.add(0.9);
+//        rStarTree.insertRecord(new Record(1, recCoordinates));
 //
-//            int bytesRead = 0;
-//            while ((bytesRead = bis.read(buf,0,BLOCK_SIZE)) != -1)
-//            {
-//                // for each byte in buf
-//                for (byte b : buf) {
-//                    //System.out.print((char)b);
-//                }
+//        recCoordinates = new ArrayList<>();
+//        recCoordinates.add(-1.0);
+//        recCoordinates.add(0.0);
+//        rStarTree.insertRecord(new Record(1, recCoordinates));
 //
-//                System.out.println(bytesRead);
-//            }
+//        recCoordinates = new ArrayList<>();
+//        recCoordinates.add(23.0);
+//        recCoordinates.add(1.7);
+//        rStarTree.insertRecord(new Record(1, recCoordinates));
 //
+//        recCoordinates = new ArrayList<>();
+//        recCoordinates.add(12.0);
+//        recCoordinates.add(10.0);
+//        rStarTree.insertRecord(new Record(1, recCoordinates));
 //
-//        } catch(Exception e) {
-//            e.printStackTrace();
-//        } finally {
-//            // releases any system resources associated with the stream
-//            if(inStream!=null)
-//                inStream.close();
-//            if(bis!=null)
-//                bis.close();
-//        }
-
-        RStarTree rStarTree = new RStarTree(2);
-
-        ArrayList<Double> recCoordinates = new ArrayList<>();
-        recCoordinates.add(-100.0);
-        recCoordinates.add(1.0);
-        rStarTree.insertRecord(new Record(1, recCoordinates));
-
-        recCoordinates = new ArrayList<>();
-        recCoordinates.add(-80.0);
-        recCoordinates.add(-1.0);
-        rStarTree.insertRecord(new Record(2, recCoordinates));
-
-        recCoordinates = new ArrayList<>();
-        recCoordinates.add(4.0);
-        recCoordinates.add(1.0);
-        rStarTree.insertRecord(new Record(3, recCoordinates));
-
-        recCoordinates = new ArrayList<>();
-        recCoordinates.add(5.0);
-        recCoordinates.add(0.0);
-        rStarTree.insertRecord(new Record(4, recCoordinates));
-
-        recCoordinates = new ArrayList<>();
-        recCoordinates.add(14.0);
-        recCoordinates.add(1.0);
-        rStarTree.insertRecord(new Record(5, recCoordinates));
-
-        recCoordinates = new ArrayList<>();
-        recCoordinates.add(2.0);
-        recCoordinates.add(1.0);
-        rStarTree.insertRecord(new Record(6, recCoordinates));
-
-        recCoordinates = new ArrayList<>();
-        recCoordinates.add(2.0);
-        recCoordinates.add(0.1);
-        rStarTree.insertRecord(new Record(7, recCoordinates));
-
-        recCoordinates = new ArrayList<>();
-        recCoordinates.add(-101.0);
-        recCoordinates.add(0.1);
-        rStarTree.insertRecord(new Record(8, recCoordinates));
-
-        recCoordinates = new ArrayList<>();
-        recCoordinates.add(-102.0);
-        recCoordinates.add(0.1);
-        rStarTree.insertRecord(new Record(9, recCoordinates));
-
-        recCoordinates = new ArrayList<>();
-        recCoordinates.add(-125.0);
-        recCoordinates.add(1.0);
-        rStarTree.insertRecord(new Record(10, recCoordinates));
-
-        recCoordinates = new ArrayList<>();
-        recCoordinates.add(9.0);
-        recCoordinates.add(0.9);
-        rStarTree.insertRecord(new Record(1, recCoordinates));
-
-        recCoordinates = new ArrayList<>();
-        recCoordinates.add(-1.0);
-        recCoordinates.add(0.0);
-        rStarTree.insertRecord(new Record(1, recCoordinates));
-
-        recCoordinates = new ArrayList<>();
-        recCoordinates.add(23.0);
-        recCoordinates.add(1.7);
-        rStarTree.insertRecord(new Record(1, recCoordinates));
-
-        recCoordinates = new ArrayList<>();
-        recCoordinates.add(12.0);
-        recCoordinates.add(10.0);
-        rStarTree.insertRecord(new Record(1, recCoordinates));
-
-        recCoordinates = new ArrayList<>();
-        recCoordinates.add(20.0);
-        recCoordinates.add(-2.0);
-        rStarTree.insertRecord(new Record(1, recCoordinates));
-
-        recCoordinates = new ArrayList<>();
-        recCoordinates.add(2.0);
-        recCoordinates.add(-0.1);
-        rStarTree.insertRecord(new Record(1, recCoordinates));
-
-        recCoordinates = new ArrayList<>();
-        recCoordinates.add(-1.0);
-        recCoordinates.add(-2.0);
-        rStarTree.insertRecord(new Record(1, recCoordinates));
-
-        recCoordinates = new ArrayList<>();
-        recCoordinates.add(1.0);
-        recCoordinates.add(1.0);
-        rStarTree.insertRecord(new Record(1, recCoordinates));
-
-        recCoordinates = new ArrayList<>();
-        recCoordinates.add(15.0);
-        recCoordinates.add(-1.0);
-        rStarTree.insertRecord(new Record(1, recCoordinates));
+//        recCoordinates = new ArrayList<>();
+//        recCoordinates.add(20.0);
+//        recCoordinates.add(-2.0);
+//        rStarTree.insertRecord(new Record(1, recCoordinates));
+//
+//        recCoordinates = new ArrayList<>();
+//        recCoordinates.add(2.0);
+//        recCoordinates.add(-0.1);
+//        rStarTree.insertRecord(new Record(1, recCoordinates));
+//
+//        recCoordinates = new ArrayList<>();
+//        recCoordinates.add(-1.0);
+//        recCoordinates.add(-2.0);
+//        rStarTree.insertRecord(new Record(1, recCoordinates));
+//
+//        recCoordinates = new ArrayList<>();
+//        recCoordinates.add(1.0);
+//        recCoordinates.add(1.0);
+//        rStarTree.insertRecord(new Record(1, recCoordinates));
+//
+//        recCoordinates = new ArrayList<>();
+//        recCoordinates.add(15.0);
+//        recCoordinates.add(-1.0);
+//        rStarTree.insertRecord(new Record(1, recCoordinates));
 
 //        recCoordinates = new ArrayList<>();
 //        recCoordinates.add(-136.0);
@@ -219,10 +149,10 @@ public class Main {
         // Point radius query testing
         System.out.print("KNN Query: ");
         point = new ArrayList<>();
-        // Point's center
-        point.add(0.0);
-        point.add(0.0);
-        queryRecords = rStarTree.getNearestNeighbours(point,9);
+        // Point's center 269064201,33.0127443,34.6633102
+        point.add(33.0127443);
+        point.add(34.6633102);
+        queryRecords = rStarTree.getNearestNeighbours(point,2);
 
         for (Long id: queryRecords)
             System.out.print(id + ", ");
@@ -263,8 +193,8 @@ public class Main {
 
                 if (entry.getChildNode()!= null)
                 {
-                    System.out.println("Going inside the node...");
-                    printOverallNode(entry);
+//                    System.out.println("Going inside the node...");
+//                    printOverallNode(entry);
                 }
 
                 System.out.println();
@@ -272,18 +202,5 @@ public class Main {
             }
             System.out.println("Leaving the node...");
         }
-    }
-
-    static byte[] serialize(Object obj) throws IOException {
-        ByteArrayOutputStream out = new ByteArrayOutputStream();
-        ObjectOutputStream os = new ObjectOutputStream(out);
-        os.writeObject(obj);
-        return out.toByteArray();
-    }
-
-    static Object deserialize(byte[] data) throws IOException, ClassNotFoundException {
-        ByteArrayInputStream in = new ByteArrayInputStream(data);
-        ObjectInputStream is = new ObjectInputStream(in);
-        return is.readObject();
     }
 }
