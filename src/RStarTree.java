@@ -124,8 +124,7 @@ class RStarTree {
                 // Let A be the group of the first p entries
                 // node.getEntries().sort(new EntryComparator.EntryAreaEnlargementComparator(boundingBoxToAdd));
 
-
-                // Let A be the group of the first p entries
+               // Let A be the group of the first p entries
                 ArrayList<EntryAreaEnlargementPair> entryAreaEnlargementPairs = new ArrayList<>();
 
                 for (Entry entry: node.getEntries())
