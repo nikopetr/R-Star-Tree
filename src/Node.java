@@ -3,20 +3,31 @@ import java.util.ArrayList;
 
 
 class Node implements Serializable {
-    static final int MAX_ENTRIES = 4;
+    static final int MAX_ENTRIES = MetaData.calculateMaxEntriesInNode();
     private static final int MINIMUM_ENTRIES = (int)(0.4 * MAX_ENTRIES); // Setting m to 40%
 
     private int level;
     private ArrayList<Entry> entries;
+    private long blockId;
 
+    // Root constructor
     Node(int level) {
         this.level = level;
         this.entries = new ArrayList<>();
+        this.blockId = RStarTree.ROOT_NODE_BLOCK_ID;
     }
 
     Node(int level, ArrayList<Entry> entries) {
         this.level = level;
         this.entries = entries;
+    }
+
+    void setBlockId(int blockId) {
+        this.blockId = blockId;
+    }
+
+    long getBlockId() {
+        return blockId;
     }
 
     int getLevel() {
@@ -51,7 +62,7 @@ private ArrayList<Distribution> chooseSplitAxis() {
 //    distributions
 
         // int bestSplitAxis;
-        ArrayList<Distribution> splitAxisDistributions = new ArrayList<>(); // Vector of pointers to nodes (for the different distributions)
+        ArrayList<Distribution> splitAxisDistributions = new ArrayList<>(); // for the different distributions
         double splitAxisMarginsSum = Double.MAX_VALUE;
         for (int d = 0; d < MetaData.DIMENSIONS; d++)
         {

@@ -40,7 +40,7 @@ class NearestNeighboursQuery extends Query {
         if (node.getLevel() != RStarTree.LEAF_LEVEL) {
             while (i < node.getEntries().size() && (nearestNeighbours.size() < k || node.getEntries().get(i).getBoundingBox().findMinDistanceFromPoint(searchPoint) <= searchPointRadius))
             {
-                findNeighbours(node.getEntries().get(i).getChildNode());
+                findNeighbours(MetaData.readIndexFileBlock(node.getEntries().get(i).getChildNodeBlockId()));
                 i++;
             }
         }

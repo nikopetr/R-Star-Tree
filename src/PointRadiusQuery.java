@@ -28,7 +28,7 @@ class PointRadiusQuery extends Query {
                 // For all overlapping entries, invoke Search on the tree whose root is
                 // pointed to by E.childPTR.
                 if (entry.getBoundingBox().checkOverLapWithPoint(searchPoint,searchPointRadius))
-                    search(entry.getChildNode());
+                    search( MetaData.readIndexFileBlock(entry.getChildNodeBlockId()));
             }
 
             // [Search leaf node]
