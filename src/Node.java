@@ -51,7 +51,7 @@ private ArrayList<Distribution> chooseSplitAxis() {
 //    distributions
 
         // int bestSplitAxis;
-        ArrayList<Distribution> splitAxisDistributions = new ArrayList<>(); // Vector of pointers to nodes (for the different distributions)
+        ArrayList<Distribution> splitAxisDistributions = new ArrayList<>();
         double splitAxisMarginsSum = Double.MAX_VALUE;
         for (int d = 0; d < MetaData.DIMENSIONS; d++)
         {

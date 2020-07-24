@@ -8,11 +8,10 @@ public class Main {
 
 
         RStarTree rStarTree = new RStarTree();
-
-//        ArrayList<Record> records;
+        // Adding the data of datafile in the RStarTree
 //        for (int i = 0; i<MetaData.getTotalBlocksInDatafile(); i++)
 //        {
-//            records = MetaData.readDataFileBlock(i);
+//            ArrayList<Record> records = MetaData.readDataFileBlock(i);
 //            for (Record record : records)
 //                rStarTree.insertRecord(record);
 //        }

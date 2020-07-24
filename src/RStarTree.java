@@ -109,11 +109,11 @@ class RStarTree {
 
         Entry bestEntry;
 
-        // If the child pointers in N point to leaves
+        // If the child pointers in N point to the levelToAdd
         if (node.getLevel() == levelToAdd+1)
         {
             // Alternative for large node sizes, determine the nearly minimum overlap cost
-            if (Node.MAX_ENTRIES > (CHOOSE_SUBTREE_P_ENTRIES *2)/3  && node.getEntries().size() > CHOOSE_SUBTREE_P_ENTRIES) //TODO check this condition
+            if (Node.MAX_ENTRIES > (CHOOSE_SUBTREE_P_ENTRIES *2)/3  && node.getEntries().size() > CHOOSE_SUBTREE_P_ENTRIES)
             {
 
                 // Sort the rectangles in N in increasing order of
@@ -158,7 +158,7 @@ class RStarTree {
             return bestEntry;
         }
 
-        // if the child pointers in N do not point to leaves
+        // if the child pointers in N do not point to the levelToAdd
 
         // [determine the minimum area cost],
         // choose the leaf in N whose rectangle needs least
