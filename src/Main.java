@@ -9,6 +9,8 @@ public class Main {
         MetaData.resetIndexFile();
         MetaData.initializeDataFile(); // initialises/resets the data of datafile
 
+        System.out.println("Total blocks in datafile: " + MetaData.calculateTotalBlocksInDataFile());
+
         RStarTree rStarTree = new RStarTree();
         // Adding the data of datafile in the RStarTree
         for (int i = 0; i<MetaData.getTotalBlocksInDatafile(); i++)
@@ -118,9 +120,9 @@ public class Main {
 //        recCoordinates.add(1.0);
 //        rStarTree.insertRecord(new Record(20, recCoordinates));
 
-//        Node node = rStarTree.getRoot();
-//        for (Entry rootNodeEntry: node.getEntries())
-//            printOverallNode(rootNodeEntry);
+        Node node = rStarTree.getRoot();
+        for (Entry rootNodeEntry: node.getEntries())
+            printOverallNode(rootNodeEntry);
 
         // Range query testing
         System.out.print("Range Query: ");

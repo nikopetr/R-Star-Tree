@@ -1,5 +1,6 @@
 import java.io.*;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Random;
@@ -32,12 +33,28 @@ class MetaData {
         return is.readObject();
     }
 
+    // DATAFILE STUFF
+
     static int getTotalBlocksInDatafile() {
         return totalBlocksInDatafile;
     }
 
-    // DATAFILE STUFF
+    // TODO delete this and include the total blocks in the metadata of the datafile (in block 0)
+    static long calculateTotalBlocksInDataFile()
+    {
+        try {
 
+            // size of a file (in bytes)
+            long bytes = Files.size(Paths.get(PATH_TO_DATAFILE));
+            return (bytes / BLOCK_SIZE);
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return 0;
+    }
+
+    // Calculates the total blocks in the datafile
     // Reads the data from the CSV files and adds it to the datafile
     static void initializeDataFile(){
         try{
@@ -113,7 +130,7 @@ class MetaData {
             //bis = new BufferedInputStream(fis);
             byte[] block = new byte[BLOCK_SIZE];
             if (bis.read(block,0,BLOCK_SIZE) != BLOCK_SIZE)
-                throw new IllegalStateException("Block size read was not BLOCK_SIZE bytes");
+                throw new IllegalStateException("Block size read was not of" + BLOCK_SIZE + "bytes");
 
 
             byte[] goodPutLengthInBytes = serialize(new Random().nextInt()); // Serializing an integer ir order to get the size of goodPutLength in bytes
@@ -211,7 +228,7 @@ class MetaData {
             //bis = new BufferedInputStream(fis);
             byte[] block = new byte[BLOCK_SIZE];
             if (bis.read(block,0,BLOCK_SIZE) != BLOCK_SIZE)
-                throw new IllegalStateException("Block size read was not BLOCK_SIZE bytes");
+                throw new IllegalStateException("Block size read was not of" + BLOCK_SIZE + "bytes");
 
 
             byte[] goodPutLengthInBytes = serialize(new Random().nextInt()); // Serializing an integer ir order to get the size of goodPutLength in bytes

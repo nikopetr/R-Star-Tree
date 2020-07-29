@@ -75,8 +75,8 @@ private ArrayList<Distribution> chooseSplitAxis() {
                 entriesSortedByUpper.add(entry);
             }
 
-            entriesSortedByLower.sort(new EntryComparator.EntryBoundComparator(d,false));
-            entriesSortedByUpper.sort(new EntryComparator.EntryBoundComparator(d,true));
+            entriesSortedByLower.sort(new EntryComparator.EntryBoundComparator(entriesSortedByLower,d,false));
+            entriesSortedByUpper.sort(new EntryComparator.EntryBoundComparator(entriesSortedByUpper,d,true));
 
             ArrayList<ArrayList<Entry>> sortedEntries = new ArrayList<>();
             sortedEntries.add(entriesSortedByLower);

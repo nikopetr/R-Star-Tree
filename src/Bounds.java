@@ -36,8 +36,8 @@ class Bounds  implements Serializable {
         // For each dimension finds the minimum interval needed for the entries to fit
         for (int d = 0; d < MetaData.DIMENSIONS; d++)
         {
-            Entry lowerEntry = Collections.min(entries, new EntryComparator.EntryBoundComparator(d,false));
-            Entry upperEntry = Collections.max(entries, new EntryComparator.EntryBoundComparator(d,true));
+            Entry lowerEntry = Collections.min(entries, new EntryComparator.EntryBoundComparator(entries,d,false));
+            Entry upperEntry = Collections.max(entries, new EntryComparator.EntryBoundComparator(entries,d,true));
             minimumBounds.add(new Bounds(lowerEntry.getBoundingBox().getBounds().get(d).getLower(),upperEntry.getBoundingBox().getBounds().get(d).getUpper()));
         }
         return minimumBounds;

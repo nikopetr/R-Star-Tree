@@ -156,7 +156,7 @@ class RStarTree {
 
                 // From the items in A, considering all items in N, choose the entry
                 // whose rectangle needs least overlap enlargement
-                bestEntry = Collections.min(sortedByEnlargementEntries.subList(0, CHOOSE_SUBTREE_P_ENTRIES), new EntryComparator.EntryOverlapEnlargementComparator(boundingBoxToAdd,node.getEntries()));
+                bestEntry = Collections.min(sortedByEnlargementEntries.subList(0, CHOOSE_SUBTREE_P_ENTRIES), new EntryComparator.EntryOverlapEnlargementComparator(sortedByEnlargementEntries.subList(0, CHOOSE_SUBTREE_P_ENTRIES),boundingBoxToAdd,node.getEntries()));
 
                 return bestEntry;
             }
@@ -164,7 +164,7 @@ class RStarTree {
             // Choose the entry in N whose rectangle needs least overlap enlargement to include the new data
             // rectangle Resolve ties by choosing the entry whose rectangle needs least area enlargement,
             // then the entry with the rectangle of smallest area
-            bestEntry = Collections.min(node.getEntries(), new EntryComparator.EntryOverlapEnlargementComparator(boundingBoxToAdd,node.getEntries()));
+            bestEntry = Collections.min(node.getEntries(), new EntryComparator.EntryOverlapEnlargementComparator(node.getEntries(),boundingBoxToAdd,node.getEntries()));
             return bestEntry;
         }
 
@@ -247,7 +247,7 @@ class RStarTree {
 
         // RI2: Sort the items in INCREASING order (since then we use close reinsert)
         // of their distances computed in RI1
-        childNode.getEntries().sort(new EntryComparator.EntryDistanceFromCenterComparator(parentEntry.getBoundingBox()));
+        childNode.getEntries().sort(new EntryComparator.EntryDistanceFromCenterComparator(childNode.getEntries(),parentEntry.getBoundingBox()));
         ArrayList<Entry> removedEntries = new ArrayList<>(childNode.getEntries().subList(childNode.getEntries().size()-REINSERT_P_ENTRIES,childNode.getEntries().size()));
 
         // RI3: Remove the last p items from N (since then we use close reinsert) and adjust the bounding rectangle of N
