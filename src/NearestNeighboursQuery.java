@@ -35,12 +35,12 @@ class NearestNeighboursQuery extends Query {
 
     //TODO fix it to calculate the distance only once
     private void findNeighbours(Node node) {
-        node.getEntries().sort(new EntryComparator.EntryDistanceFromPointComparator(searchPoint));
+        node.getEntries().sort(new EntryComparator.EntryDistanceFromPointComparator(node.getEntries(),searchPoint));
         int i = 0;
         if (node.getLevel() != RStarTree.LEAF_LEVEL) {
             while (i < node.getEntries().size() && (nearestNeighbours.size() < k || node.getEntries().get(i).getBoundingBox().findMinDistanceFromPoint(searchPoint) <= searchPointRadius))
             {
-                findNeighbours(node.getEntries().get(i).getChildNode());
+                findNeighbours(MetaData.readIndexFileBlock(node.getEntries().get(i).getChildNodeBlockId()));
                 i++;
             }
         }

@@ -1,4 +1,5 @@
 import java.util.ArrayList;
+import java.util.Objects;
 
 class PointRadiusQuery extends Query {
     private ArrayList<Long> qualifyingRecordIds; // Record ids used for queries
@@ -28,7 +29,7 @@ class PointRadiusQuery extends Query {
                 // For all overlapping entries, invoke Search on the tree whose root is
                 // pointed to by E.childPTR.
                 if (entry.getBoundingBox().checkOverLapWithPoint(searchPoint,searchPointRadius))
-                    search(entry.getChildNode());
+                    search(Objects.requireNonNull(MetaData.readIndexFileBlock(entry.getChildNodeBlockId())));
             }
 
             // [Search leaf node]
