@@ -3,10 +3,10 @@ import java.util.ArrayList;
 
 class Entry implements Serializable {
     private BoundingBox boundingBox;
-    private Long childNodeBlockId;
+    private Node childNode;
 
     Entry(Node childNode) {
-        this.childNodeBlockId = childNode.getBlockId();
+        this.childNode = childNode;
         adjustBBToFitEntries(childNode.getEntries());
     }
 
@@ -15,16 +15,12 @@ class Entry implements Serializable {
         this.boundingBox = boundingBox;
     }
 
-    void setChildNodeBlockId(Long childNodeBlockId) {
-        this.childNodeBlockId = childNodeBlockId;
-    }
-
     BoundingBox getBoundingBox() {
         return boundingBox;
     }
 
-    Long getChildNodeBlockId() {
-        return childNodeBlockId;
+    Node getChildNode() {
+        return childNode;
     }
 
     void adjustBBToFitEntries(ArrayList<Entry> entries){
@@ -32,7 +28,6 @@ class Entry implements Serializable {
     }
 
     void adjustBBToFitEntry(Entry entry){
-        // Adjusting the Bouncing Box of the entry by assigning a new bounding box to it with the new minimum bounds
         boundingBox = new BoundingBox(Bounds.findMinimumBounds(boundingBox,entry.getBoundingBox()));
     }
 }

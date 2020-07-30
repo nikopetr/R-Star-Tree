@@ -1,75 +1,52 @@
 import java.util.ArrayList;
 import java.util.Comparator;
-import java.util.HashMap;
-import java.util.List;
 
-// Class used for comparing Entries based on different
 class EntryComparator {
     // Class used to compare entries by their lower or upper bounds
     static class EntryBoundComparator implements Comparator<Entry>
     {
-        // Hash-map  used for mapping the comparison value of the Entries during the compare method
-        // Key of the hash-map is the given Entry
-        // Value of the hash-map is the given Entry's bound (either upper or lower)
-        private HashMap<Entry,Double> entryComparisonMap;
+        private int dimension;
+        private boolean sortInUpper;
 
-        EntryBoundComparator(List<Entry> entriesToCompare, int dimension, boolean compareByUpper)
+        EntryBoundComparator(int dimension, boolean sortInUpper)
         {
-            // Initialising hash-map
-            this.entryComparisonMap = new HashMap<>();
-            // If the comparison is based on the upper bound
-            if (compareByUpper)
-            {
-                for (Entry entry : entriesToCompare)
-                    entryComparisonMap.put(entry,entry.getBoundingBox().getBounds().get(dimension).getUpper());
-            }
-            // else if the comparison is based on the lower bound
-            else
-            {
-                for (Entry entry : entriesToCompare)
-                    entryComparisonMap.put(entry,entry.getBoundingBox().getBounds().get(dimension).getLower());
-            }
+            this.dimension = dimension;
+            this.sortInUpper = sortInUpper;
         }
 
         public int compare(Entry entryA, Entry entryB)
         {
-            return Double.compare(entryComparisonMap.get(entryA),entryComparisonMap.get(entryB));
+            if (sortInUpper)
+                return Double.compare(entryA.getBoundingBox().getBounds().get(dimension).getUpper(), entryB.getBoundingBox().getBounds().get(dimension).getUpper());
+            else
+                return Double.compare(entryA.getBoundingBox().getBounds().get(dimension).getLower(), entryB.getBoundingBox().getBounds().get(dimension).getLower());
         }
     }
 
     // Class used to compare entries by their area enlargement of including a new "rectangle" item
     static class EntryAreaEnlargementComparator implements Comparator<Entry>
     {
-        // Hash-map used for mapping the comparison value of the Entries during the compare method
-        // First value of the ArrayList is the area of the bounding box
-        // Second value of the ArrayList is the area enlargement of the specific Entry
-        private HashMap<Entry,ArrayList<Double>> entryComparisonMap;
+        private BoundingBox boundingBoxToAdd;
 
-        EntryAreaEnlargementComparator(List<Entry> entriesToCompare, BoundingBox boundingBoxToAdd)
+        EntryAreaEnlargementComparator(BoundingBox boundingBoxToAdd)
         {
-            // Initialising Hash-map
-            this.entryComparisonMap = new HashMap<>();
-            for (Entry entry : entriesToCompare)
-            {
-                BoundingBox entryNewBB = new BoundingBox(Bounds.findMinimumBounds(entry.getBoundingBox(),boundingBoxToAdd));
-                ArrayList<Double> values = new ArrayList<>();
-                values.add(entry.getBoundingBox().getArea()); // First value of the ArrayList is the area of the bounding box
-                double areaEnlargement = entryNewBB.getArea() - entry.getBoundingBox().getArea();
-                if (areaEnlargement < 0)
-                    throw new IllegalStateException("The enlargement cannot be a negative number");
-                values.add(areaEnlargement); // Second value of the ArrayList is the area enlargement of the specific Entry
-                entryComparisonMap.put(entry,values);
-            }
-
+            this.boundingBoxToAdd = boundingBoxToAdd;
         }
 
         @Override
         public int compare(Entry entryA, Entry entryB) {
-            double areaEnlargementA = entryComparisonMap.get(entryA).get(1);
-            double areaEnlargementB = entryComparisonMap.get(entryB).get(1);
+            BoundingBox newBoundingBoxA = new BoundingBox(Bounds.findMinimumBounds(entryA.getBoundingBox(),boundingBoxToAdd));
+            BoundingBox newBoundingBoxB = new BoundingBox(Bounds.findMinimumBounds(entryB.getBoundingBox(),boundingBoxToAdd));
+
+            double areaEnlargementA = newBoundingBoxA.getArea() - entryA.getBoundingBox().getArea();
+            double areaEnlargementB = newBoundingBoxB.getArea() - entryB.getBoundingBox().getArea();
+
+            if (areaEnlargementA < 0 || areaEnlargementB < 0)
+                throw new IllegalStateException("The enlargement cannot be a negative number");
+
             // Resolve ties by choosing the entry with the rectangle of smallest area
             if (areaEnlargementA == areaEnlargementB)
-                return Double.compare(entryComparisonMap.get(entryA).get(0),entryComparisonMap.get(entryB).get(0));
+                return Double.compare(entryA.getBoundingBox().getArea(),entryB.getBoundingBox().getArea());
             else
                 return Double.compare(areaEnlargementA,areaEnlargementB);
         }
@@ -78,46 +55,37 @@ class EntryComparator {
     // Class used to compare entries by their overlap enlargement of including a new "rectangle" item
     static class EntryOverlapEnlargementComparator implements Comparator<Entry>
     {
-        private BoundingBox boundingBoxToAdd; // The bounding box to add
-        private ArrayList<Entry> nodeEntries; // All the entries of the Node
+        private BoundingBox boundingBoxToAdd;
+        private ArrayList<Entry> nodeEntries;
 
-        // Hash-map used for mapping the comparison value of the Entries during the compare method
-        // Key of the hash-map is the given Entry
-        // Value of the hash-map is the given Entry's overlap Enlargement
-        private HashMap<Entry,Double> entryComparisonMap;
-        EntryOverlapEnlargementComparator(List<Entry> entriesToCompare, BoundingBox boundingBoxToAdd, ArrayList<Entry> nodeEntries)
+        EntryOverlapEnlargementComparator(BoundingBox boundingBoxToAdd, ArrayList<Entry> nodeEntries)
         {
             this.boundingBoxToAdd = boundingBoxToAdd;
             this.nodeEntries = nodeEntries;
-
-            // Initialising Hash-map
-            this.entryComparisonMap = new HashMap<>();
-            for (Entry entry : entriesToCompare)
-            {
-                double overlapEntry = calculateEntryOverlapValue(entry, entry.getBoundingBox());
-                Entry newEntry = new Entry(new BoundingBox(Bounds.findMinimumBounds(entry.getBoundingBox(),boundingBoxToAdd))); // The entry's bounding box after it includes the new bounding box
-                double overlapNewEntry = calculateEntryOverlapValue(entry, newEntry.getBoundingBox()); // Using the previous entry signature in order to check for equality
-                double overlapEnlargementEntry = overlapNewEntry - overlapEntry ;
-
-                if (overlapEnlargementEntry < 0)
-                    throw new IllegalStateException("The enlargement cannot be a negative number");
-
-                entryComparisonMap.put(entry,overlapEnlargementEntry);
-            }
         }
 
+        //TODO maybe make this run a bit faster
         @Override
         public int compare(Entry entryA, Entry entryB) {
-            double overlapEnlargementEntryA = entryComparisonMap.get(entryA);
-            double overlapEnlargementEntryB = entryComparisonMap.get(entryB);
-            // Resolve ties by choosing the entry whose rectangle needs least area enlargement, then
-            // the entry with the rectangle of smallest area (which is included in the EntryAreaEnlargementComparator)
+            double overlapEntryA = calculateEntryOverlapValue(entryA, entryA.getBoundingBox());
+            Entry newEntryA = new Entry(new BoundingBox(Bounds.findMinimumBounds(entryA.getBoundingBox(),boundingBoxToAdd))); // The entry's bounding box after it includes the new bounding box
+            double overlapNewEntryA = calculateEntryOverlapValue(entryA, newEntryA.getBoundingBox()); // Using the previous entry signature in order to check for equality
+            double overlapEnlargementEntryA = overlapNewEntryA - overlapEntryA ;
+
+            double overlapEntryB = calculateEntryOverlapValue(entryB, entryB.getBoundingBox());
+            Entry newEntryB = new Entry(new BoundingBox(Bounds.findMinimumBounds(entryB.getBoundingBox(),boundingBoxToAdd))); // The entry's bounding box after it includes the new bounding box
+            double overlapNewEntryB = calculateEntryOverlapValue(entryB, newEntryB.getBoundingBox()); // Using the previous entry signature in order to check for equality
+            double overlapEnlargementEntryB = overlapNewEntryB - overlapEntryB ;
+
+            if (overlapEnlargementEntryA < 0 || overlapEnlargementEntryB < 0)
+                throw new IllegalStateException("The enlargement cannot be a negative number");
+
+            // Resolve ties by choosing the entry
+            // whose rectangle needs least area enlargement, then
+            // the entry with the rectangle of smallest area
             if (overlapEnlargementEntryA == overlapEnlargementEntryB)
-            {   ArrayList<Entry> entriesToCompare = new ArrayList<>();
-                entriesToCompare.add(entryA);
-                entriesToCompare.add(entryB);
-                return new EntryAreaEnlargementComparator(entriesToCompare,boundingBoxToAdd).compare(entryA,entryB);
-            }
+                return new EntryAreaEnlargementComparator(boundingBoxToAdd).compare(entryA,entryB);
+
             else
                 return Double.compare(overlapEnlargementEntryA,overlapEnlargementEntryB);
         }
@@ -137,44 +105,30 @@ class EntryComparator {
     // Class used to compare entries by their distance from their overall's bouncing box's center
     static class EntryDistanceFromCenterComparator implements Comparator<Entry>
     {
-        // Hash-map  used for mapping the comparison value of the Entries during the compare method
-        // Key of the hash-map is the given Entry
-        // Value of the hash-map is the given Entry's BoundingBox distance from the given BoundingBox
-        private HashMap<Entry,Double> entryComparisonMap;
+        private BoundingBox boundingBox;
 
-        EntryDistanceFromCenterComparator(List<Entry>entriesToCompare, BoundingBox boundingBox) {
-            // Initialising Hash-map
-            this.entryComparisonMap = new HashMap<>();
-
-            for (Entry entry : entriesToCompare)
-                entryComparisonMap.put(entry,BoundingBox.findDistanceBetweenBoundingBoxes(entry.getBoundingBox(),boundingBox));
+        EntryDistanceFromCenterComparator(BoundingBox boundingBox) {
+            this.boundingBox = boundingBox;
         }
 
         public int compare(Entry entryA, Entry entryB)
         {
-            return Double.compare(entryComparisonMap.get(entryA),entryComparisonMap.get(entryB));
+            return Double.compare(BoundingBox.findDistanceBetweenBoundingBoxes(entryA.getBoundingBox(),boundingBox),BoundingBox.findDistanceBetweenBoundingBoxes(entryB.getBoundingBox(),boundingBox));
         }
     }
 
     // Class used to compare entries by their distance from a point
     static class EntryDistanceFromPointComparator implements Comparator<Entry>
     {
-        // Hash-map  used for mapping the comparison value of the Entries during the compare method
-        // Key of the hash-map is the given Entry
-        // Value of the hash-map is the given Entry's BoundingBox distance from the given point
-        private HashMap<Entry,Double> entryComparisonMap;
+        private ArrayList<Double> point;
 
-        EntryDistanceFromPointComparator(List<Entry> entriesToCompare, ArrayList<Double> point) {
-            // Initialising Hash-map
-            this.entryComparisonMap = new HashMap<>();
-
-            for (Entry entry : entriesToCompare)
-                entryComparisonMap.put(entry,entry.getBoundingBox().findMinDistanceFromPoint(point));
+        EntryDistanceFromPointComparator(ArrayList<Double> point) {
+            this.point = point;
         }
 
         public int compare(Entry entryA, Entry entryB)
         {
-            return Double.compare(entryComparisonMap.get(entryA),entryComparisonMap.get(entryB));
+            return Double.compare(entryA.getBoundingBox().findMinDistanceFromPoint(point),entryB.getBoundingBox().findMinDistanceFromPoint(point));
         }
     }
 }
