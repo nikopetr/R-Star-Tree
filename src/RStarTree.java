@@ -4,38 +4,38 @@ import java.util.Collections;
 class RStarTree {
 
     static final int LEAF_LEVEL = 1; // Constant leaf level 1, since we are increasing the level from the root, the root (top level) will always have the highest level
+    private int totalLevels; // The total levels of the tree
+    private boolean[] levelsInserted; // Used to know which levels have already called overFlowTreatment on a data insertion procedure
+    static final int ROOT_NODE_BLOCK_ID = 0; // Root node will always have 0 as it's ID, in order to identify which block has the root Node
     private static final int CHOOSE_SUBTREE_P_ENTRIES = 32;
     private static final int REINSERT_P_ENTRIES = (int) (0.30 * Node.MAX_ENTRIES); // Setting p to 30% of max entries
 
-    private Node root; // The root of the tree
-    private int totalLevels; // The total levels of the tree
-    private boolean[] levelsInserted; // Used to know which levels have already called overFlowTreatment on a data insertion procedure
 
     RStarTree() {
-        this.root = new Node(1); // We are increasing the size from the root, the root (top level) will always have the highest level
-        this.totalLevels = 1;
+        MetaData.writeNewIndexFileBlock(new Node(1));
+        this.totalLevels = 1; // We are increasing the size from the root, the root (top level) will always have the highest level
     }
 
-    Node getRoot() { //TODO DELETE THIS AFTER TESTING
-        return root;
+    Node getRoot() {
+        return MetaData.readIndexFileBlock(ROOT_NODE_BLOCK_ID);
     }
 
     // Query which returns the ids of the K Records that are closer to the given point
     ArrayList<Long> getNearestNeighbours(ArrayList<Double> searchPoint, int k){
         Query query = new NearestNeighboursQuery(searchPoint,k);
-        return query.getQueryRecordIds(root);
+        return query.getQueryRecordIds(MetaData.readIndexFileBlock(ROOT_NODE_BLOCK_ID));
     }
 
     // Query which returns the ids of the Records that are inside the given searchBoundingBox
     ArrayList<Long> getDataInBoundingBox(BoundingBox searchBoundingBox){
         Query query = new BoundingBoxRangeQuery(searchBoundingBox);
-        return query.getQueryRecordIds(root);
+        return query.getQueryRecordIds(MetaData.readIndexFileBlock(ROOT_NODE_BLOCK_ID));
     }
 
     // Query which returns the ids of the Records that are inside the radius of the given point
     ArrayList<Long> getDataInCircle(ArrayList<Double> searchPoint, double radius){
         Query query = new PointRadiusQuery(searchPoint,radius);
-        return query.getQueryRecordIds(root);
+        return query.getQueryRecordIds(MetaData.readIndexFileBlock(ROOT_NODE_BLOCK_ID));
     }
 
     void insertRecord(Record record) {
@@ -45,29 +45,39 @@ class RStarTree {
             boundsForEachDimension.add(new Bounds(record.getCoordinate(d),record.getCoordinate(d)));
 
         levelsInserted = new boolean[totalLevels];
-        insert(null, new LeafEntry(record.getId(), boundsForEachDimension), LEAF_LEVEL);
+        insert(null, null, new LeafEntry(record.getId(), boundsForEachDimension), LEAF_LEVEL);
     }
 
     // Inserts nodes recursively. As an optimization, the algorithm steps are
-    // way out of order. :) If this returns a non null Entry, then that Entry should
-    // be added to the caller's Node of the tree
-    private Entry insert(Entry parentEntry, Entry dataEntry, int levelToAdd) {
+    // in a different order. If this returns a non null Entry, then
+    // that Entry should be added to the caller's Node of the R-tree
+    private Entry insert(Node parentNode, Entry parentEntry,  Entry dataEntry, int levelToAdd) {
 
         Node childNode;
+        long idToRead;
 
         if(parentEntry == null)
-            childNode = root;
+            idToRead = ROOT_NODE_BLOCK_ID;
+
         else
         {
             // Updating-Adjusting the bounding box of the Entry that points to the Updated Node
             parentEntry.adjustBBToFitEntry(dataEntry);
-            childNode = parentEntry.getChildNode();
+            MetaData.updateIndexFileBlock(parentNode,parentNode.getBlockId());
+            idToRead = parentEntry.getChildNodeBlockId();
         }
+
+        childNode = MetaData.readIndexFileBlock(idToRead);
+        if (childNode == null)
+            throw new IllegalStateException("The Node-block read from file is null");
 
         // CS2: If we're at a leaf (or the level we wanted to insert the dataEntry), then use that level
         // I2: If N has less than M items, accommodate E in N
         if (childNode.getLevel() == levelToAdd)
+        {
             childNode.insertEntry(dataEntry);
+            MetaData.updateIndexFileBlock(childNode,childNode.getBlockId());
+        }
 
         else {
             // I1: Invoke ChooseSubtree. with the level as a parameter,
@@ -76,18 +86,27 @@ class RStarTree {
 
             // Recurse to get the node that the new data entry will fit better
             Entry bestEntry = chooseSubTree(childNode, dataEntry.getBoundingBox(), levelToAdd);
-
             // Receiving a new Entry if the recursion caused the next level's Node to split
-            Entry newEntry = insert(bestEntry, dataEntry, levelToAdd);
+            Entry newEntry = insert(childNode, bestEntry, dataEntry, levelToAdd);
+
+            childNode = MetaData.readIndexFileBlock(idToRead);
+            if (childNode == null)
+                throw new IllegalStateException("The Node-block read from file is null");
 
             // If split was called on children, the new entry that the split caused gets joined to the list of items at this level
             if (newEntry != null)
+            {
                 childNode.insertEntry(newEntry);
+                MetaData.updateIndexFileBlock(childNode,childNode.getBlockId());
+            }
+
             // Else no split was called on children, returning null upwards
             else
+            {
+                MetaData.updateIndexFileBlock(childNode,childNode.getBlockId());
                 return null;
+            }
         }
-
 
         // If N has M+1 items. invoke OverflowTreatment with the
         // level of N as a parameter [for reinsertion or split]
@@ -96,7 +115,7 @@ class RStarTree {
             // I3: If OverflowTreatment was called and a split was
             // performed, propagate OverflowTreatment upwards
             // if necessary
-            return overFlowTreatment(parentEntry);
+            return overFlowTreatment(parentNode,parentEntry,childNode);
         }
 
         return null;
@@ -115,16 +134,10 @@ class RStarTree {
             // Alternative for large node sizes, determine the nearly minimum overlap cost
             if (Node.MAX_ENTRIES > (CHOOSE_SUBTREE_P_ENTRIES *2)/3  && node.getEntries().size() > CHOOSE_SUBTREE_P_ENTRIES)
             {
-
                 // Sort the rectangles in N in increasing order of
-                // then area enlargement needed to include the new
-                // data rectangle
+                // then area enlargement needed to include the new data rectangle
 
-                // TODO remove previus implementation if eveyth is ok
                 // Let A be the group of the first p entries
-                // node.getEntries().sort(new EntryComparator.EntryAreaEnlargementComparator(boundingBoxToAdd));
-
-               // Let A be the group of the first p entries
                 ArrayList<EntryAreaEnlargementPair> entryAreaEnlargementPairs = new ArrayList<>();
 
                 for (Entry entry: node.getEntries())
@@ -141,23 +154,21 @@ class RStarTree {
                     sortedByEnlargementEntries.add(pair.getEntry());
 
 
-                // From the items in A, considering all items in
-                // N, choose the entry whose rectangle needs least
-                // overlap enlargement
-                bestEntry = Collections.min(sortedByEnlargementEntries.subList(0, CHOOSE_SUBTREE_P_ENTRIES), new EntryComparator.EntryOverlapEnlargementComparator(boundingBoxToAdd,node.getEntries()));
+                // From the items in A, considering all items in N, choose the entry
+                // whose rectangle needs least overlap enlargement
+                bestEntry = Collections.min(sortedByEnlargementEntries.subList(0, CHOOSE_SUBTREE_P_ENTRIES), new EntryComparator.EntryOverlapEnlargementComparator(sortedByEnlargementEntries.subList(0, CHOOSE_SUBTREE_P_ENTRIES),boundingBoxToAdd,node.getEntries()));
 
                 return bestEntry;
             }
 
-            // Choose the entry in N whose rectangle needs least
-            // overlap enlargement to include the new data
-            // rectangle Resolve ties by choosing the entry
-            // whose rectangle needs least area enlargement, then
-            // the entry with the rectangle of smallest area
-            bestEntry = Collections.min(node.getEntries(), new EntryComparator.EntryOverlapEnlargementComparator(boundingBoxToAdd,node.getEntries()));
+            // Choose the entry in N whose rectangle needs least overlap enlargement to include the new data
+            // rectangle Resolve ties by choosing the entry whose rectangle needs least area enlargement,
+            // then the entry with the rectangle of smallest area
+            bestEntry = Collections.min(node.getEntries(), new EntryComparator.EntryOverlapEnlargementComparator(node.getEntries(),boundingBoxToAdd,node.getEntries()));
             return bestEntry;
         }
 
+<<<<<<< HEAD
         // if the child pointers in N do not point to the levelToAdd
 
         // [determine the minimum area cost],
@@ -166,6 +177,11 @@ class RStarTree {
         // rectangle. Resolve ties by choosing the leaf
         // with the rectangle of smallest area
 
+=======
+        // if the child pointers in N do not point to leaves: determine the minimum area cost],
+        // choose the leaf in N whose rectangle needs least area enlargement to include the new data
+        // rectangle. Resolve ties by choosing the leaf with the rectangle of smallest area
+>>>>>>> origin/files(disk)-implementation
         ArrayList<EntryAreaEnlargementPair> entryAreaEnlargementPairs = new ArrayList<>();
         for (Entry entry: node.getEntries())
         {
@@ -175,83 +191,74 @@ class RStarTree {
         }
 
         bestEntry = Collections.min(entryAreaEnlargementPairs,EntryAreaEnlargementPair::compareTo).getEntry();
-
-        // TODO remove previus implementation if eveyth is ok
-//        ArrayList<Entry> sortedByEnlargementEntries = new ArrayList<>();
-//        for (EntryAreaEnlargementPair pair: entryAreaEnlargementPairs)
-//            sortedByEnlargementEntries.add(pair.getEntry());
-//        bestEntry = Collections.min(node.getEntries(), new EntryComparator.EntryAreaEnlargementComparator(boundingBoxToAdd));
         return bestEntry;
     }
 
     // Algorithm OverflowTreatment
-    private Entry overFlowTreatment(Entry parentEntry) {
+    private Entry overFlowTreatment(Node parentNode, Entry parentEntry, Node childNode) {
 
-        Node childNode;
-        if(parentEntry == null)
-            childNode = root;
-        else
-            childNode = parentEntry.getChildNode(); //TODO check if you can avoid getting child node
-
-        // If the level is not the root level and this is the first
-        // call of OverflowTreatment in the given level
-        // during the insertion of one data rectangle, then reinsert
-        if (childNode != root && !levelsInserted[childNode.getLevel()-1])
+        // If the level is not the root level and this is the first call of OverflowTreatment
+        // in the given level during the insertion of one data rectangle, then reinsert
+        if (childNode.getBlockId() != ROOT_NODE_BLOCK_ID && !levelsInserted[childNode.getLevel()-1])
         {
-            levelsInserted[childNode.getLevel()-1] = true; // Mark level as already reinserted
-            reInsert(parentEntry);
+            levelsInserted[childNode.getLevel()-1] = true; // Mark level as already inserted
+            reInsert(parentNode,parentEntry,childNode);
             return null;
         }
 
-        levelsInserted[childNode.getLevel()-1] = true; // Mark level as already reinserted
+        // TODO check this line might not be needed
+        levelsInserted[childNode.getLevel()-1] = true; // Mark level as already inserted
 
         // Else invoke Split
-        // The two nodes occurring after the split
-        ArrayList<Node> splitNodes = childNode.splitNode();
+        ArrayList<Node> splitNodes = childNode.splitNode(); // The two nodes occurring after the split
         if (splitNodes.size() != 2)
             throw new IllegalStateException("The resulting Nodes after a split cannot be more or less than two");
+        childNode.setEntries(splitNodes.get(0).getEntries()); // Adjusting the previous Node with the new entries
+        Node splitNode = splitNodes.get(1); // The new Node that occurred from the split
 
-        // Adjusting the previous Node with the new entries and bounds
-        childNode.setEntries(splitNodes.get(0).getEntries());
-
-        // Updating-Adjusting the bounding box of the Entry that points to the Updated previous Node
-        if (childNode != root && parentEntry != null)
-            parentEntry.adjustBBToFitEntries(childNode.getEntries());
-
-        // The new Node that occurred from the split
-        Node splitNode = splitNodes.get(1);
-
-        // If OverflowTreatment caused a split of the root, create a new root
-        if (childNode == root)
+        // Updating the file with the new changes of the split nodes
+        if (childNode.getBlockId() != ROOT_NODE_BLOCK_ID)
         {
-            Node oldRootNode = new Node(childNode.getLevel(),childNode.getEntries());
+            MetaData.updateIndexFileBlock(childNode,childNode.getBlockId());
+            splitNode.setBlockId(MetaData.getTotalBlocksInIndexFile());
+            MetaData.writeNewIndexFileBlock(splitNode);
 
-            ArrayList<Entry> newRootEntries = new ArrayList<>();
-            newRootEntries.add(new Entry(oldRootNode));
-            newRootEntries.add(new Entry(splitNode));
+            // Propagate the overflow treatment upwards, to fit the entry on the caller's level Node
+            parentEntry.adjustBBToFitEntries(childNode.getEntries()); // Adjusting the bounding box of the Entry that points to the updated Node
+            MetaData.updateIndexFileBlock(parentNode,parentNode.getBlockId()); // Write changes to file
+            return new Entry(splitNode);
+        }
 
-            root = new Node(++totalLevels,newRootEntries);
-            return null;
-         }
+        // Else if OverflowTreatment caused a split of the root, create a new root
 
-        // Propagate the overflow treatment upwards, to fit the entry on the caller's level Node
-		return new Entry(splitNode);
+        // Creating two Node-blocks for the split
+        childNode.setBlockId(MetaData.getTotalBlocksInIndexFile());
+        MetaData.writeNewIndexFileBlock(childNode);
+        splitNode.setBlockId(MetaData.getTotalBlocksInIndexFile());
+        MetaData.writeNewIndexFileBlock(splitNode);
+
+        // Updating the root Node-block with the new root Node
+        ArrayList<Entry> newRootEntries = new ArrayList<>();
+        newRootEntries.add(new Entry(childNode));
+        newRootEntries.add(new Entry(splitNode));
+        Node newRoot = new Node(++totalLevels,newRootEntries);
+        newRoot.setBlockId(ROOT_NODE_BLOCK_ID);
+        MetaData.updateIndexFileBlock(newRoot,newRoot.getBlockId());
+        return null;
     }
 
     // Algorithm reinsert
-    private void reInsert(Entry parentEntry) {
-        Node childNode = parentEntry.getChildNode(); //TODO check if you can avoid getting child node
+    private void reInsert(Node parentNode, Entry parentEntry, Node childNode) {
 
         if(childNode.getEntries().size() != Node.MAX_ENTRIES + 1)
             throw new IllegalStateException("Cannot throw reinsert for node with total entries fewer than M+1");
 
-        // RI1 For all M+l items of a node N, compute the distance
-        // between the centers of their rectangles and the center
-        // of the bounding rectangle of N
+        // RI1 For all M+l items of a node N, compute the distance between the centers of their rectangles
+        // and the center of the bounding rectangle of N
 
-        // RI2: Sort the items in INCREASING order (since then we use close reinsert) of their distances
-        // computed in RI1
-        childNode.getEntries().sort(new EntryComparator.EntryDistanceFromCenterComparator(parentEntry.getBoundingBox()));
+        // RI2: Sort the items in INCREASING order (since then we use close reinsert)
+        // of their distances computed in RI1
+        childNode.getEntries().sort(new EntryComparator.EntryDistanceFromCenterComparator(childNode.getEntries(),parentEntry.getBoundingBox()));
         ArrayList<Entry> removedEntries = new ArrayList<>(childNode.getEntries().subList(childNode.getEntries().size()-REINSERT_P_ENTRIES,childNode.getEntries().size()));
 
         // RI3: Remove the last p items from N (since then we use close reinsert) and adjust the bounding rectangle of N
@@ -259,16 +266,16 @@ class RStarTree {
             childNode.getEntries().remove(childNode.getEntries().size()-1);
 
         // Updating bounding box of node and to the parent entry
-       // childNode.setOverallBoundingBox(new BoundingBox(Bounds.findMinimumBounds(childNode.getEntries())));
         parentEntry.adjustBBToFitEntries(childNode.getEntries());
+        MetaData.updateIndexFileBlock(parentNode,parentNode.getBlockId());
+        MetaData.updateIndexFileBlock(childNode,childNode.getBlockId());
 
-        // RI4: In the sort, defined in RI2, starting with the
-        // minimum distance (= close reinsert), invoke Insert
-        // to reinsert the items
+        // RI4: In the sort, defined in RI2, starting with the minimum distance (= close reinsert),
+        // invoke Insert to reinsert the items
         if(removedEntries.size() != REINSERT_P_ENTRIES)
             throw new IllegalStateException("Entries queued for reinsert have different size than the ones that were removed");
 
         for (Entry entry : removedEntries)
-            insert(null,entry,childNode.getLevel());
+            insert(null,null,entry,childNode.getLevel());
     }
 }
