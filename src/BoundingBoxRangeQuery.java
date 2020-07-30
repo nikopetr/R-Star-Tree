@@ -26,7 +26,7 @@ class BoundingBoxRangeQuery extends Query {
                 // For all overlapping entries, invoke Search on the tree whose root is
                 // pointed to by E.childPTR.
                 if (BoundingBox.checkOverlap(entry.getBoundingBox(),searchBoundingBox))
-                    search( MetaData.readIndexFileBlock(entry.getChildNodeBlockId()));
+                    search(entry.getChildNode());
             }
 
             // [Search leaf node]

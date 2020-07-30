@@ -1,24 +1,30 @@
 import java.io.*;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Random;
 
 class MetaData {
     static int DIMENSIONS;
     private static final String DELIMITER = ","; /* delimiter for csv */
+    private static Integer maxRecordsInBlock;
     private static final String PATH_TO_CSV = "data.csv";
     private static final String PATH_TO_DATAFILE = "datafile.dat";
     private static final String PATH_TO_INDEXFILE = "indexfile.dat";
     private static final int BLOCK_SIZE = 32 * 1024; // Each Block is 32KB
     private static int totalBlocksInDatafile;
-    private static int totalBlocksInIndexFile;
 
     static String getDELIMITER() {
         return DELIMITER;
     }
 
+    static int getTotalBlocksInDatafile() {
+        return totalBlocksInDatafile;
+    }
+
+    private static int getMaxRecordsInBlock(){
+        if (maxRecordsInBlock == null)
+             maxRecordsInBlock = calculateMaxRecordsInBlock();
+        return maxRecordsInBlock;
+    }
 
     private static byte[] serialize(Object obj) throws IOException {
         ByteArrayOutputStream out = new ByteArrayOutputStream();
@@ -34,52 +40,32 @@ class MetaData {
     }
 
     // DATAFILE STUFF
-
-    static int getTotalBlocksInDatafile() {
-        return totalBlocksInDatafile;
-    }
-
-    // TODO delete this and include the total blocks in the metadata of the datafile (in block 0)
-    static long calculateTotalBlocksInDataFile()
-    {
-        try {
-
-            // size of a file (in bytes)
-            long bytes = Files.size(Paths.get(PATH_TO_DATAFILE));
-            return (bytes / BLOCK_SIZE);
-
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        return 0;
-    }
-
-    // Calculates the total blocks in the datafile
-    // Reads the data from the CSV files and adds it to the datafile
     static void initializeDataFile(){
         try{
-            Files.deleteIfExists(Paths.get(PATH_TO_DATAFILE)); // Resetting data file
             ArrayList<Record> blockRecords = new ArrayList<>();
             BufferedReader csvReader = (new BufferedReader(new FileReader(PATH_TO_CSV))); // BufferedReader used to read the data from the csv file
             String stringRecord; // String used to read each line (row) of the csv file
-            int maxRecordsInBlock = calculateMaxRecordsInBlock();
             while ((stringRecord = csvReader.readLine()) != null)
             {
-                if (blockRecords.size() == maxRecordsInBlock)
+                if (blockRecords.size() == getMaxRecordsInBlock())
                 {
                     writeDataFileBlock(blockRecords);
+                    totalBlocksInDatafile++;
                     blockRecords =  new ArrayList<>();
                 }
                 blockRecords.add(new Record(stringRecord));
             }
             csvReader.close();
             if (blockRecords.size() > 0)
+            {
                 writeDataFileBlock(blockRecords);
-
+                totalBlocksInDatafile++;
+            }
         }catch(Exception e){e.printStackTrace();}
     }
 
     private static int calculateMaxRecordsInBlock() {
+        int maxSize = 0;
         ArrayList<Record> blockRecords = new ArrayList<>();
         int i;
         for (i = 0; i < Integer.MAX_VALUE; i++) {
@@ -96,8 +82,11 @@ class MetaData {
             } catch (IOException e) {
                 e.printStackTrace();
             }
-            if (goodPutLengthInBytes.length + recordInBytes.length > BLOCK_SIZE)
+            if (goodPutLengthInBytes.length + recordInBytes.length > BLOCK_SIZE) {
+                //System.out.println(maxSize);
                 break;
+            } else
+                maxSize = recordInBytes.length;
         }
         return i;
     }
@@ -111,10 +100,10 @@ class MetaData {
             System.arraycopy(goodPutLengthInBytes, 0, block, 0, goodPutLengthInBytes.length);
             System.arraycopy(recordInBytes, 0, block, goodPutLengthInBytes.length, recordInBytes.length);
 
-            FileOutputStream fos = new FileOutputStream(PATH_TO_DATAFILE,true);
-            BufferedOutputStream bout = new BufferedOutputStream(fos);
-            bout.write(block);
-            totalBlocksInDatafile++;
+            try (FileOutputStream fos = new FileOutputStream(PATH_TO_DATAFILE,true);
+                 BufferedOutputStream bout = new BufferedOutputStream(fos)) {
+                bout.write(block);
+            }
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -130,7 +119,7 @@ class MetaData {
             //bis = new BufferedInputStream(fis);
             byte[] block = new byte[BLOCK_SIZE];
             if (bis.read(block,0,BLOCK_SIZE) != BLOCK_SIZE)
-                throw new IllegalStateException("Block size read was not of" + BLOCK_SIZE + "bytes");
+                throw new IllegalStateException("Block size read was not BLOCK_SIZE bytes");
 
 
             byte[] goodPutLengthInBytes = serialize(new Random().nextInt()); // Serializing an integer ir order to get the size of goodPutLength in bytes
@@ -148,11 +137,8 @@ class MetaData {
     }
 
     // INDEX FILE STUFF
-    static int getTotalBlocksInIndexFile() {
-        return totalBlocksInIndexFile;
-    }
-
-    static int calculateMaxEntriesInNode() {
+    private static int calculateMaxEntriesInNode() {
+        int maxSize = 0;
         ArrayList<Entry> entries = new ArrayList<>();
         int i;
         for (i = 0; i < Integer.MAX_VALUE; i++) {
@@ -160,7 +146,6 @@ class MetaData {
             for (int d = 0; d < MetaData.DIMENSIONS; d++)
                 boundsForEachDimension.add(new Bounds(0.0, 0.0));
             Entry entry = new LeafEntry(new Random().nextLong(), boundsForEachDimension);
-            entry.setChildNodeBlockId(new Random().nextLong());
             entries.add(entry);
             byte[] nodeInBytes = new byte[0];
             byte[] goodPutBytes = new byte[0];
@@ -170,21 +155,17 @@ class MetaData {
             } catch (IOException e) {
                 e.printStackTrace();
             }
-            if (goodPutBytes.length + nodeInBytes.length > BLOCK_SIZE)
+            if (goodPutBytes.length + nodeInBytes.length > BLOCK_SIZE) {
+               // System.out.println(maxSize);
                 break;
+            } else
+                maxSize = nodeInBytes.length;
         }
         return i;
     }
 
-    static void resetIndexFile(){
-        try {
-            Files.deleteIfExists(Paths.get(PATH_TO_INDEXFILE)); // Resetting/Deleting index file data
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
     // Works as append only
-    static void writeNewIndexFileBlock(Node node) {
+    private static void writeIndexFileBlock(Node node) {
         try {
             byte[] nodeInBytes = serialize(node);
             byte[] goodPutLengthInBytes = serialize(nodeInBytes.length);
@@ -192,33 +173,16 @@ class MetaData {
             System.arraycopy(goodPutLengthInBytes, 0, block, 0, goodPutLengthInBytes.length);
             System.arraycopy(nodeInBytes, 0, block, goodPutLengthInBytes.length, nodeInBytes.length);
 
-            FileOutputStream fos = new FileOutputStream(PATH_TO_INDEXFILE,true);
-            BufferedOutputStream bout = new BufferedOutputStream(fos);
-            bout.write(block);
-            totalBlocksInIndexFile++;
+            try (FileOutputStream fos = new FileOutputStream(PATH_TO_INDEXFILE,true);
+                 BufferedOutputStream bout = new BufferedOutputStream(fos)) {
+                bout.write(block);
+            }
         } catch (Exception e) {
             e.printStackTrace();
         }
     }
 
-    static void updateIndexFileBlock(Node node, long blockId) {
-        try {
-            byte[] nodeInBytes = serialize(node);
-            byte[] goodPutLengthInBytes = serialize(nodeInBytes.length);
-            byte[] block = new byte[BLOCK_SIZE];
-            System.arraycopy(goodPutLengthInBytes, 0, block, 0, goodPutLengthInBytes.length);
-            System.arraycopy(nodeInBytes, 0, block, goodPutLengthInBytes.length, nodeInBytes.length);
-
-            RandomAccessFile f = new RandomAccessFile(new File(PATH_TO_INDEXFILE), "rw");
-            f.seek(blockId*BLOCK_SIZE); // this basically reads n bytes in the file
-            f.write(block);
-            f.close();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
-
-    static Node readIndexFileBlock(long blockId){
+    private static Node readIndexFileBlock(int blockId){
         try {
             RandomAccessFile raf = new RandomAccessFile(new File(PATH_TO_INDEXFILE), "rw");
             FileInputStream fis = new FileInputStream(raf.getFD());
@@ -228,7 +192,7 @@ class MetaData {
             //bis = new BufferedInputStream(fis);
             byte[] block = new byte[BLOCK_SIZE];
             if (bis.read(block,0,BLOCK_SIZE) != BLOCK_SIZE)
-                throw new IllegalStateException("Block size read was not of" + BLOCK_SIZE + "bytes");
+                throw new IllegalStateException("Block size read was not BLOCK_SIZE bytes");
 
 
             byte[] goodPutLengthInBytes = serialize(new Random().nextInt()); // Serializing an integer ir order to get the size of goodPutLength in bytes
@@ -245,3 +209,4 @@ class MetaData {
         return null;
     }
 }
+
