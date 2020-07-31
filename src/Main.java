@@ -6,10 +6,8 @@ public class Main {
 
         MetaData.DIMENSIONS = 2;
 
-        MetaData.resetIndexFile();
-        MetaData.initializeDataFile(); // initialises/resets the data of datafile
-
-        System.out.println("Total blocks in datafile: " + MetaData.calculateTotalBlocksInDataFile());
+        //MetaData.resetIndexFile();
+        //MetaData.initializeDataFile(); // initialises/resets the data of datafile
 
         RStarTree rStarTree = new RStarTree();
         // Adding the data of datafile in the RStarTree
@@ -120,20 +118,37 @@ public class Main {
 //        recCoordinates.add(1.0);
 //        rStarTree.insertRecord(new Record(20, recCoordinates));
 
-        Node node = rStarTree.getRoot();
-        for (Entry rootNodeEntry: node.getEntries())
-            printOverallNode(rootNodeEntry);
+//        Node node = rStarTree.getRoot();
+//        for (Entry rootNodeEntry: node.getEntries())
+//            printOverallNode(rootNodeEntry);
 
         // Range query testing
         System.out.print("Range Query: ");
         ArrayList<Bounds> queryBounds = new ArrayList<>();
         queryBounds.add(new Bounds(-154, -102.0));
         queryBounds.add(new Bounds(0.1, 254.0));
+        long startRangeQueryTime = System.nanoTime();
         ArrayList<Long> queryRecords = rStarTree.getDataInBoundingBox(new BoundingBox(queryBounds));
+        long stopRangeQueryTime = System.nanoTime();
+        for (Long id: queryRecords)
+            System.out.print(id + ", ");
+        System.out.println();
+        System.out.println("Time taken for range query using R star: ");
+        System.out.println(stopRangeQueryTime - startRangeQueryTime);
+
+
+        //Sequential Scan Range Query
+        System.out.print("Sequential Scan Range Query: ");
+        SequentialScanBoundingBoxRangeQuery sequentialScanBoundingBoxRangeQuery = new SequentialScanBoundingBoxRangeQuery(new BoundingBox(queryBounds));
+        long startSequentialRangeQuryTime = System.nanoTime();
+        queryRecords = sequentialScanBoundingBoxRangeQuery.getQueryRecordIds(0);
+        long stopSequentialRangeQueryTime = System.nanoTime();
 
         for (Long id: queryRecords)
             System.out.print(id + ", ");
         System.out.println();
+        System.out.println("Time taken for Range query using sequential scan: ");
+        System.out.println(stopSequentialRangeQueryTime - startSequentialRangeQuryTime);
 
         // Point radius query testing
         System.out.print("Point Radius Query: ");
@@ -144,21 +159,41 @@ public class Main {
         queryRecords = rStarTree.getDataInCircle(point,125.004);
 
         for (Long id: queryRecords)
-            System.out.print(id + ", ");
+            System.out.println(id + ", ");
         System.out.println();
+
+
+
+
+
+
 
         // Point radius query testing
         System.out.print("KNN Query: ");
         point = new ArrayList<>();
-        // Point's center 269064201,33.0127443,34.6633102
-        point.add(33.0127443);
-        point.add(34.6633102);
-        queryRecords = rStarTree.getNearestNeighbours(point,2);
+        // Point's center 20896245,32.7557378,34.6510560
+        point.add(32.7557378);
+        point.add(34.6510560);
+        long startKNNTime = System.nanoTime();
+        queryRecords = rStarTree.getNearestNeighbours(point,3);
+        long stopKNNTime = System.nanoTime();
+        for (Long id: queryRecords)
+            System.out.print(id + ", ");
+        System.out.println();
+        System.out.println("Time taken for KNN using R star tree: ");
+        System.out.println(stopKNNTime - startKNNTime);
 
+        System.out.print("Sequential KNN Query: ");
+        SequentialScanQuery sequentialNearestNeighboursQuery = new SequentialNearestNeighboursQuery(point, 3);
+        long startSequentialKNNTime = System.nanoTime();
+        queryRecords = sequentialNearestNeighboursQuery.getQueryRecordIds(0);
+        long stopSequentialKNNTime = System.nanoTime();
         for (Long id: queryRecords)
             System.out.print(id + ", ");
         System.out.println();
 
+        System.out.println("Time taken for KNN using sequential scan: ");
+        System.out.println(stopSequentialKNNTime - startSequentialKNNTime);
     }
 
     static private void printOverallNode(Entry parentEntry) throws IOException, ClassNotFoundException {
