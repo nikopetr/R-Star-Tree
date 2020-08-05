@@ -1,22 +1,22 @@
 import java.io.Serializable;
 import java.util.ArrayList;
 
-
+// Class representing a Node of the RStarTree
 class Node implements Serializable {
-    static final int MAX_ENTRIES = MetaData.calculateMaxEntriesInNode();
-    private static final int MINIMUM_ENTRIES = (int)(0.4 * MAX_ENTRIES); // Setting m to 40%
+    private static final int MAX_ENTRIES = FilesHelper.calculateMaxEntriesInNode(); // The maximum entries that a Node can fit based on the file parameters
+    private static final int MIN_ENTRIES = (int)(0.4 * MAX_ENTRIES); // Setting m to 40%
+    private int level; // The level of the tree that this Node is located
+    private long blockId; // The unique ID of the file block that this Node refers to
+    private ArrayList<Entry> entries; // The ArrayList with the Entries of the Node
 
-    private int level;
-    private ArrayList<Entry> entries;
-    private long blockId;
-
-    // Root constructor
+    // Root constructor with it's level as a parameter which makes a new empty ArrayList for the Node
     Node(int level) {
         this.level = level;
         this.entries = new ArrayList<>();
-        this.blockId = RStarTree.ROOT_NODE_BLOCK_ID;
+        this.blockId = RStarTree.getRootNodeBlockId();
     }
 
+    // Node constructor with level and entries parameters
     Node(int level, ArrayList<Entry> entries) {
         this.level = level;
         this.entries = entries;
@@ -24,6 +24,14 @@ class Node implements Serializable {
 
     void setBlockId(int blockId) {
         this.blockId = blockId;
+    }
+
+    void setEntries(ArrayList<Entry> entries) {
+        this.entries = entries;
+    }
+
+    static int getMaxEntries() {
+        return MAX_ENTRIES;
     }
 
     long getBlockId() {
@@ -34,37 +42,32 @@ class Node implements Serializable {
         return level;
     }
 
-    void setEntries(ArrayList<Entry> entries) {
-        this.entries = entries;
-    }
-
     ArrayList<Entry> getEntries() {
         return entries;
     }
 
+    // Adds the given entry to the entries ArrayList of the Node
     void insertEntry(Entry entry)
     {
         entries.add(entry);
     }
 
+    // Splits the entries of the Node and divides them to two new Nodes
+    // Returns an ArrayList which
     ArrayList<Node> splitNode() {
         ArrayList<Distribution> splitAxisDistributions = chooseSplitAxis();
         return chooseSplitIndex(splitAxisDistributions);
     }
 
-// Returns the distributions of the best Axis
-private ArrayList<Distribution> chooseSplitAxis() {
-//    For each axis
-//    Sort the entries by the lower then by the upper
-//    value of their rectangles and determine all
-//    distributions as described above Compute S. the
-//    sum of all margin-values of the different
-//    distributions
+    // Returns the distributions of the best Axis
+    private ArrayList<Distribution> chooseSplitAxis() {
+        // For each axis sort the entries by the lower then by the upper
+        // value of their rectangles and determine all distributions as described above Compute S which is the
+        // sum of all margin-values of the different distributions
 
-        // int bestSplitAxis;
         ArrayList<Distribution> splitAxisDistributions = new ArrayList<>(); // for the different distributions
         double splitAxisMarginsSum = Double.MAX_VALUE;
-        for (int d = 0; d < MetaData.DIMENSIONS; d++)
+        for (int d = 0; d < FilesHelper.getDataDimensions(); d++)
         {
             ArrayList<Entry> entriesSortedByUpper = new ArrayList<>();
             ArrayList<Entry> entriesSortedByLower = new ArrayList<>();
@@ -88,14 +91,14 @@ private ArrayList<Distribution> chooseSplitAxis() {
             // Total number of different distributions = M-2*m+2 for each sorted vector
             for (ArrayList<Entry> sortedEntryList: sortedEntries)
             {
-                for (int k = 1; k <= MAX_ENTRIES - 2*MINIMUM_ENTRIES +2; k++) //TODO CHECK FOR "="
+                for (int k = 1; k <= MAX_ENTRIES - 2* MIN_ENTRIES +2; k++) //TODO CHECK FOR "="
                 {
                     ArrayList<Entry> firstGroup = new ArrayList<>();
                     ArrayList<Entry> secondGroup = new ArrayList<>();
                     // The first group contains the first (m-l)+k entries, the second group contains the remaining entries
-                    for (int j = 0; j < (MINIMUM_ENTRIES -1)+k; j++)
+                    for (int j = 0; j < (MIN_ENTRIES -1)+k; j++)
                         firstGroup.add(sortedEntryList.get(j));
-                    for (int j = (MINIMUM_ENTRIES -1)+k; j < entries.size(); j++)
+                    for (int j = (MIN_ENTRIES -1)+k; j < entries.size(); j++)
                         secondGroup.add(sortedEntryList.get(j));
 
                     BoundingBox bbFirstGroup = new BoundingBox(Bounds.findMinimumBounds(firstGroup));

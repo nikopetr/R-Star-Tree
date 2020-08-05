@@ -14,9 +14,9 @@ class Record implements Serializable {
     {
         String[] stringArray;
         /* given string will be split by the argument delimiter provided. */
-        stringArray = recordInString.split(MetaData.getDELIMITER());
+        stringArray = recordInString.split(FilesHelper.getDELIMITER());
 
-        if (stringArray.length < MetaData.DIMENSIONS + 1)
+        if (stringArray.length < FilesHelper.getDataDimensions() + 1)
             throw new IllegalArgumentException("In order to convert a String to a Record, a Long and a total amount of coordinates for each dimension must be given");
 
         id = Long.parseLong(stringArray[0]);

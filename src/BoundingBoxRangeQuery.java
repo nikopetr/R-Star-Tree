@@ -1,13 +1,16 @@
 import java.util.ArrayList;
 
+// Class used for executing a range query withing a specific bounding box with the use of the RStarTree
+// Searches for records within that bounding box
 class BoundingBoxRangeQuery extends Query {
     private ArrayList<Long> qualifyingRecordIds; // Record ids used for queries
-    private BoundingBox searchBoundingBox; // bounding box used for range queries
+    private BoundingBox searchBoundingBox; // BoundingBox used for range queries
 
     BoundingBoxRangeQuery(BoundingBox searchBoundingBox) {
         this.searchBoundingBox = searchBoundingBox;
     }
 
+    // Returns the ids of the query's records
     @Override
     ArrayList<Long> getQueryRecordIds(Node node){
         qualifyingRecordIds = new ArrayList<>();
@@ -20,13 +23,13 @@ class BoundingBoxRangeQuery extends Query {
         // [Search subtrees]
         // If T is not a leaf check each entry E to determine whether E.R
         //overlaps searchBoundingBox.
-        if (node.getLevel() != RStarTree.LEAF_LEVEL)
+        if (node.getLevel() != RStarTree.getLeafLevel())
             for (Entry entry: node.getEntries())
             {
                 // For all overlapping entries, invoke Search on the tree whose root is
                 // pointed to by E.childPTR.
                 if (BoundingBox.checkOverlap(entry.getBoundingBox(),searchBoundingBox))
-                    search( MetaData.readIndexFileBlock(entry.getChildNodeBlockId()));
+                    search( FilesHelper.readIndexFileBlock(entry.getChildNodeBlockId()));
             }
 
             // [Search leaf node]

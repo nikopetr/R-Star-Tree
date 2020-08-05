@@ -4,11 +4,12 @@ import java.util.ArrayList;
 import static java.lang.Math.abs;
 import static java.lang.Math.sqrt;
 
+// Represents a bounding box in the n-dimensional space
 class BoundingBox implements Serializable {
-    private ArrayList<Bounds> bounds;
-    private Double area;
-    private Double margin;
-    private ArrayList<Double> center;
+    private ArrayList<Bounds> bounds; // The bounds for each dimension (for each axis)
+    private Double area; // The total area that the BoundingBox covers
+    private Double margin; // The total margin (perimeter) that the BoundingBox takes
+    private ArrayList<Double> center; // Represents te coordinates of the point that represents the center of the bounding box
 
     BoundingBox(ArrayList<Bounds> bounds) {
         this.bounds = bounds;
@@ -21,7 +22,6 @@ class BoundingBox implements Serializable {
         return bounds;
     }
 
-    //TODO check with big input if return margin works fine
     double getArea() {
         // If area is not yet initialized, find the area
         if (area == null)
@@ -49,7 +49,7 @@ class BoundingBox implements Serializable {
         double minDistance = 0;
         // For every dimension find the minimum distance
         double rd;
-        for (int d = 0; d < MetaData.DIMENSIONS; d++)
+        for (int d = 0; d < FilesHelper.getDataDimensions(); d++)
         {
             if(getBounds().get(d).getLower() > point.get(d))
                 rd = getBounds().get(d).getLower();
@@ -69,15 +69,15 @@ class BoundingBox implements Serializable {
         {
             center = new ArrayList<>();
 
-            for (int d = 0; d < MetaData.DIMENSIONS; d++)
+            for (int d = 0; d < FilesHelper.getDataDimensions(); d++)
                 center.add((bounds.get(d).getUpper()+bounds.get(d).getLower())/2);
         }
         return center;
     }
-    // Calculates and returns the margin(perimeter) of this BoundingBox
+    // Calculates and returns the margin (perimeter) of this BoundingBox
     private double calculateMargin() {
         double sum = 0;
-        for (int d = 0; d < MetaData.DIMENSIONS; d++)
+        for (int d = 0; d < FilesHelper.getDataDimensions(); d++)
             sum += abs(bounds.get(d).getUpper() - bounds.get(d).getLower());
         return sum;
     }
@@ -85,7 +85,7 @@ class BoundingBox implements Serializable {
     // Calculates and returns the area of this BoundingBox
     private double calculateArea() {
         double productOfEdges = 1;
-        for (int d = 0; d < MetaData.DIMENSIONS; d++)
+        for (int d = 0; d < FilesHelper.getDataDimensions(); d++)
             productOfEdges = productOfEdges * (bounds.get(d).getUpper() - bounds.get(d).getLower());
         return abs(productOfEdges);
     }
@@ -93,7 +93,7 @@ class BoundingBox implements Serializable {
     // Returns true if the two bounding boxes overlap
     static boolean checkOverlap(BoundingBox boundingBoxA, BoundingBox boundingBoxB) {
         // For every dimension find the intersection point
-        for (int d = 0; d < MetaData.DIMENSIONS; d++)
+        for (int d = 0; d < FilesHelper.getDataDimensions(); d++)
         {
             double overlapD = Math.min(boundingBoxA.getBounds().get(d).getUpper(), boundingBoxB.getBounds().get(d).getUpper())
                     - Math.max(boundingBoxA.getBounds().get(d).getLower(), boundingBoxB.getBounds().get(d).getLower());
@@ -108,7 +108,7 @@ class BoundingBox implements Serializable {
     static double calculateOverlapValue(BoundingBox boundingBoxA, BoundingBox boundingBoxB) {
         double overlapValue = 1;
         // For every dimension find the intersection point
-        for (int d = 0; d < MetaData.DIMENSIONS; d++)
+        for (int d = 0; d < FilesHelper.getDataDimensions(); d++)
         {
             double overlapD = Math.min(boundingBoxA.getBounds().get(d).getUpper(), boundingBoxB.getBounds().get(d).getUpper())
                     - Math.max(boundingBoxA.getBounds().get(d).getLower(), boundingBoxB.getBounds().get(d).getLower());
@@ -125,7 +125,7 @@ class BoundingBox implements Serializable {
     static double findDistanceBetweenBoundingBoxes(BoundingBox boundingBoxA, BoundingBox boundingBoxB) {
         double distance = 0;
         // For every dimension find the intersection point
-        for (int d = 0; d < MetaData.DIMENSIONS; d++)
+        for (int d = 0; d < FilesHelper.getDataDimensions(); d++)
         {
             distance += Math.pow(boundingBoxA.getCenter().get(d) - boundingBoxB.getCenter().get(d),2);
         }

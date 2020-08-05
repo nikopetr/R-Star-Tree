@@ -3,7 +3,7 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 
-// Class used for comparing Entries based on different
+// Class used for comparing Entries based on different criteria
 class EntryComparator {
     // Class used to compare entries by their lower or upper bounds
     static class EntryBoundComparator implements Comparator<Entry>
@@ -37,7 +37,7 @@ class EntryComparator {
         }
     }
 
-    // Class used to compare entries by their area enlargement of including a new "rectangle" item
+    // Class used to compare entries by their area enlargement of including a new BoundingBox ("rectangle" item)
     static class EntryAreaEnlargementComparator implements Comparator<Entry>
     {
         // Hash-map used for mapping the comparison value of the Entries during the compare method

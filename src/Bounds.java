@@ -2,24 +2,21 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collections;
 
-class Bounds  implements Serializable {
+// Represents the bounds of an interval in a single dimension
+class Bounds implements Serializable {
     private double lower; // Representing the lower value of the interval
     private double upper; // Representing the upper value of the interval
 
+    // constructor of the class
+    // Since we have to do with bounds of an interval the lower Bound cannot be bigger than upper
     Bounds(double lower, double upper) {
         if (lower <= upper)
         {
             this.lower = lower;
             this.upper = upper;
         }
-        else //TODO might just need to invert this instead of throwing exception if everything works fine
-            throw new IllegalArgumentException( "Lower Bound cannot be bigger than upper");
-//        else
-//        {
-//            this.lower = upper;
-//            this.upper = lower;
-//        }
-
+        else
+            throw new IllegalArgumentException( "The lower value of the bounds cannot be bigger than the upper");
     }
 
     double getLower() {
@@ -34,7 +31,7 @@ class Bounds  implements Serializable {
     static ArrayList<Bounds> findMinimumBounds(ArrayList<Entry> entries) {
         ArrayList<Bounds> minimumBounds = new ArrayList<>();
         // For each dimension finds the minimum interval needed for the entries to fit
-        for (int d = 0; d < MetaData.DIMENSIONS; d++)
+        for (int d = 0; d < FilesHelper.getDataDimensions(); d++)
         {
             Entry lowerEntry = Collections.min(entries, new EntryComparator.EntryBoundComparator(entries,d,false));
             Entry upperEntry = Collections.max(entries, new EntryComparator.EntryBoundComparator(entries,d,true));
@@ -47,7 +44,7 @@ class Bounds  implements Serializable {
     static ArrayList<Bounds> findMinimumBounds(BoundingBox boundingBoxA, BoundingBox boundingBoxB) {
         ArrayList<Bounds> minimumBounds = new ArrayList<>();
         // For each dimension finds the minimum interval needed for the entries to fit
-        for (int d = 0; d < MetaData.DIMENSIONS; d++)
+        for (int d = 0; d < FilesHelper.getDataDimensions(); d++)
         {
             double lower = Math.min(boundingBoxA.getBounds().get(d).getLower(), boundingBoxB.getBounds().get(d).getLower());
             double upper = Math.max(boundingBoxA.getBounds().get(d).getUpper(), boundingBoxB.getBounds().get(d).getUpper());

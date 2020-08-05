@@ -1,6 +1,7 @@
+// Class used in order to compare and sort Entry objects based on their area enlargement
 class EntryAreaEnlargementPair implements Comparable {
-    private Entry entry;
-    private double areaEnlargement;
+    private Entry entry; // The Entry object
+    private double areaEnlargement; // It's area enlargement assigned
 
     EntryAreaEnlargementPair(Entry entry, double areaEnlargement){
         this.entry = entry;
@@ -15,7 +16,7 @@ class EntryAreaEnlargementPair implements Comparable {
         return areaEnlargement;
     }
 
-    // Comparing by area enlargement
+    // Comparing the pairs by area enlargement
     @Override
     public int compareTo(Object obj) {
         EntryAreaEnlargementPair pairB = (EntryAreaEnlargementPair)obj;
