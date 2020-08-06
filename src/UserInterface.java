@@ -160,6 +160,18 @@ class UserInterface {
                         System.out.println("Time taken: " + (double) (stopPointRadiusQueryTime - startPointRadiusQueryTime) / 1000000 + " ms");
                         System.out.println();
 
+                        // Sequential Scan Point Radius Query
+                        System.out.print("Sequential Scan Point Radious Query: ");
+                        SequentialScanPointRadiusQuery sequentialScanPointRadiusQuery = new SequentialScanPointRadiusQuery(point, 47.69);
+                        long startSeqScanPointRadius = System.nanoTime();
+                        queryRecords = sequentialScanPointRadiusQuery.getQueryRecordIds();
+                        long stopSeqScanPointRadius = System.nanoTime();
+                        for (Long id: queryRecords)
+                            System.out.print(id + ", ");
+                        System.out.println();
+                        System.out.println("Time taken: " + (double) (stopSeqScanPointRadius - startSeqScanPointRadius) / 1000000 + " ms");
+                        System.out.println("");
+
                         break switchLabel;
                     case "3":
                         // KNN Query
