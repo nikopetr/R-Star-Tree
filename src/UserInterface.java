@@ -14,7 +14,7 @@ class UserInterface {
         if (filesExist)
         {
             System.out.println("Existed data-file and index-file found.");
-            System.out.print("Do you want to make new ones based on the data of the data.csv file? (y/n): ");
+            System.out.print("Do you want to make new ones based on the data of the " + FilesHelper.getPathToCsv() +  " file? (y/n): ");
             String answer;
             while (true)
             {
@@ -38,7 +38,7 @@ class UserInterface {
         if (!filesExist || resetFiles)
         {
             insertRecordsFromDataFile = true;
-            System.out.print("Give the dimensions of the spacial data (dimensions need to be the same as the data saved in data.csv): ");
+            System.out.print("Give the dimensions of the spacial data (dimensions need to be the same as the data saved in " + FilesHelper.getPathToCsv() + "): ");
             dataDimensions = scan.nextInt();
             System.out.println();
         }
@@ -166,8 +166,8 @@ class UserInterface {
                         System.out.println();
 
                         // Sequential Scan Point Radius Query
-                        System.out.print("Sequential Scan Point Radious Query: ");
-                        SequentialScanPointRadiusQuery sequentialScanPointRadiusQuery = new SequentialScanPointRadiusQuery(point, 47.69);
+                        System.out.print("Sequential Scan Point Radius Query: ");
+                        SequentialScanPointRadiusQuery sequentialScanPointRadiusQuery = new SequentialScanPointRadiusQuery(point, radius);
                         long startSeqScanPointRadius = System.nanoTime();
                         queryRecords = sequentialScanPointRadiusQuery.getQueryRecordIds();
                         long stopSeqScanPointRadius = System.nanoTime();
@@ -200,9 +200,6 @@ class UserInterface {
                             else
                                 System.out.println("The value of k must be a positive integer");
                         }
-                        // Point's center
-//                    point.add(32.7557378);
-//                    point.add(34.6510560);
 
                         // R Star - KNN Query
                         System.out.print("R Star - KNN Query: ");

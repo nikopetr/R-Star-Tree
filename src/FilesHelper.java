@@ -17,6 +17,10 @@ class FilesHelper {
     private static int totalBlocksInIndexFile; // The total blocks written in the indexfile
     private static int totalLevelsOfTreeIndex; // The total levels of the rStar tree
 
+    static String getPathToCsv() {
+        return PATH_TO_CSV;
+    }
+
     static String getDELIMITER() {
         return DELIMITER;
     }

@@ -37,13 +37,11 @@ public class SequentialScanPointRadiusQuery extends SequentialScanQuery {
 
             }
 
-            for(LeafEntry entry : entries){
-                if(entry.getBoundingBox().checkOverLapWithPoint(searchPoint, searchPointRadius)){
-
+            for(LeafEntry entry : entries)
+            {
+                if(entry.getBoundingBox().checkOverLapWithPoint(searchPoint, searchPointRadius))
                     qualifyingRecordIds.add(entry.getRecordId());
-                }
             }
-
            }else
               throw new IllegalStateException("Could not read records properly from the datafile");
            blockId++;
