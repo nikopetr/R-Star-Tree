@@ -104,8 +104,6 @@ class UserInterface {
                             }
 
                         }
-//                  queryBounds.add(new Bounds(32.7557378, 32.7589925));
-//                  queryBounds.add(new Bounds(34, 35));
 
                         // R Star - Range query
                         System.out.print("R Star - Range Query: ");
@@ -144,14 +142,21 @@ class UserInterface {
                             point.add(coordinate);
                         }
 
-                        // Circle' center
-//                    point.add(0.0);
-//                    point.add(0.0);
+                        double radius;
+                        while (true) {
+                            System.out.print("Give the radius of the circle: ");
+                            radius = scan.nextDouble();
+                            System.out.println();
+                            if (radius > 0)
+                                break;
+                            else
+                                System.out.println("Radius of the circle must be positive number");
+                        }
 
                         // R Star - Point Radius (circle) Query
                         System.out.print("R Star - Point Radius Query: ");
                         long startPointRadiusQueryTime = System.nanoTime();
-                        queryRecords = rStarTree.getDataInCircle(point, 47.69);
+                        queryRecords = rStarTree.getDataInCircle(point, radius);
                         long stopPointRadiusQueryTime = System.nanoTime();
 
                         for (Long id : queryRecords)
