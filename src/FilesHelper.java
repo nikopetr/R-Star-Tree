@@ -235,7 +235,7 @@ class FilesHelper {
             ArrayList<Bounds> boundsForEachDimension = new ArrayList<>();
             for (int d = 0; d < FilesHelper.dataDimensions; d++)
                 boundsForEachDimension.add(new Bounds(0.0, 0.0));
-            Entry entry = new LeafEntry(new Random().nextLong(), boundsForEachDimension);
+            Entry entry = new LeafEntry(new Random().nextLong(),new Random().nextLong(), boundsForEachDimension);
             entry.setChildNodeBlockId(new Random().nextLong());
             entries.add(entry);
             byte[] nodeInBytes = new byte[0];

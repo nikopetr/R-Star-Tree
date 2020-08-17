@@ -25,7 +25,7 @@ class RStarTree {
                 if (records != null)
                 {
                     for (Record record : records)
-                        insertRecord(record);
+                        insertRecord(record,i);
                 }
                 else
                     throw new IllegalStateException("Could not read records properly from the datafile");
@@ -34,102 +34,102 @@ class RStarTree {
 //        ArrayList<Double> recCoordinates = new ArrayList<>();
 //        recCoordinates.add(-100.0);
 //        recCoordinates.add(1.0);
-//        insertRecord(new Record(1, recCoordinates));
+//        insertRecord(new Record(1, recCoordinates),2);
 //
 //        recCoordinates = new ArrayList<>();
 //        recCoordinates.add(-80.0);
 //        recCoordinates.add(-1.0);
-//        insertRecord(new Record(2, recCoordinates));
+//        insertRecord(new Record(2, recCoordinates),2);
 //
 //        recCoordinates = new ArrayList<>();
 //        recCoordinates.add(4.0);
 //        recCoordinates.add(1.0);
-//        insertRecord(new Record(3, recCoordinates));
+//        insertRecord(new Record(3, recCoordinates),2);
 //
 //        recCoordinates = new ArrayList<>();
 //        recCoordinates.add(5.0);
 //        recCoordinates.add(0.0);
-//        insertRecord(new Record(4, recCoordinates));
+//        insertRecord(new Record(4, recCoordinates),2);
 //
 //        recCoordinates = new ArrayList<>();
 //        recCoordinates.add(14.0);
 //        recCoordinates.add(1.0);
-//        insertRecord(new Record(5, recCoordinates));
+//        insertRecord(new Record(5, recCoordinates),2);
 //
 //        recCoordinates = new ArrayList<>();
 //        recCoordinates.add(2.0);
 //        recCoordinates.add(1.0);
-//        insertRecord(new Record(6, recCoordinates));
+//        insertRecord(new Record(6, recCoordinates),2);
 //
 //        recCoordinates = new ArrayList<>();
 //        recCoordinates.add(2.0);
 //        recCoordinates.add(0.1);
-//        insertRecord(new Record(7, recCoordinates));
+//        insertRecord(new Record(7, recCoordinates),2);
 //
 //        recCoordinates = new ArrayList<>();
 //        recCoordinates.add(-101.0);
 //        recCoordinates.add(0.1);
-//        insertRecord(new Record(8, recCoordinates));
+//        insertRecord(new Record(8, recCoordinates),2);
 //
 //        recCoordinates = new ArrayList<>();
 //        recCoordinates.add(-102.0);
 //        recCoordinates.add(0.1);
-//        insertRecord(new Record(9, recCoordinates));
+//        insertRecord(new Record(9, recCoordinates),2);
 //
 //        recCoordinates = new ArrayList<>();
 //        recCoordinates.add(-125.0);
 //        recCoordinates.add(1.0);
-//        insertRecord(new Record(10, recCoordinates));
-
+//        insertRecord(new Record(10, recCoordinates),2);
+//
 //        recCoordinates = new ArrayList<>();
 //        recCoordinates.add(9.0);
 //        recCoordinates.add(0.9);
-//        insertRecord(new Record(11, recCoordinates));
+//        insertRecord(new Record(11, recCoordinates),2);
 //
 //        recCoordinates = new ArrayList<>();
 //        recCoordinates.add(-1.0);
 //        recCoordinates.add(0.0);
-//        insertRecord(new Record(12, recCoordinates));
+//        insertRecord(new Record(12, recCoordinates),2);
 //
 //        recCoordinates = new ArrayList<>();
 //        recCoordinates.add(23.0);
 //        recCoordinates.add(1.7);
-//        insertRecord(new Record(13, recCoordinates));
+//        insertRecord(new Record(13, recCoordinates),2);
 //
 //        recCoordinates = new ArrayList<>();
 //        recCoordinates.add(12.0);
 //        recCoordinates.add(10.0);
-//        insertRecord(new Record(14, recCoordinates));
+//        insertRecord(new Record(14, recCoordinates),2);
 //
 //        recCoordinates = new ArrayList<>();
 //        recCoordinates.add(20.0);
 //        recCoordinates.add(-2.0);
-//        insertRecord(new Record(15, recCoordinates));
+//        insertRecord(new Record(15, recCoordinates),2);
 //
 //        recCoordinates = new ArrayList<>();
 //        recCoordinates.add(2.0);
 //        recCoordinates.add(-0.1);
-//        insertRecord(new Record(16, recCoordinates));
+//        insertRecord(new Record(16, recCoordinates),2);
 //
 //        recCoordinates = new ArrayList<>();
 //        recCoordinates.add(-1.0);
 //        recCoordinates.add(-2.0);
-//        insertRecord(new Record(17, recCoordinates));
+//        insertRecord(new Record(17, recCoordinates),2);
 //
 //        recCoordinates = new ArrayList<>();
 //        recCoordinates.add(1.0);
 //        recCoordinates.add(1.0);
-//        insertRecord(new Record(18, recCoordinates));
+//        insertRecord(new Record(18, recCoordinates),2);
 //
 //        recCoordinates = new ArrayList<>();
 //        recCoordinates.add(15.0);
 //        recCoordinates.add(-1.0);
-//        insertRecord(new Record(19, recCoordinates));
+//        insertRecord(new Record(19, recCoordinates),2);
 //
 //        recCoordinates = new ArrayList<>();
 //        recCoordinates.add(-136.0);
 //        recCoordinates.add(1.0);
-//        insertRecord(new Record(20, recCoordinates));
+//        insertRecord(new Record(20, recCoordinates),2);
     }
 
     Node getRoot() {
@@ -162,14 +162,14 @@ class RStarTree {
         return query.getQueryRecordIds(FilesHelper.readIndexFileBlock(ROOT_NODE_BLOCK_ID));
     }
 
-    private void insertRecord(Record record) {
+    private void insertRecord(Record record, long datafileBlockId) {
         ArrayList<Bounds> boundsForEachDimension = new ArrayList<>();
         // Since we have to do with points as records we set low and upper to be same
         for (int d = 0; d < FilesHelper.getDataDimensions(); d++)
             boundsForEachDimension.add(new Bounds(record.getCoordinate(d),record.getCoordinate(d)));
 
         levelsInserted = new boolean[totalLevels];
-        insert(null, null, new LeafEntry(record.getId(), boundsForEachDimension), LEAF_LEVEL); // Inserting on leaf level since it's a new record
+        insert(null, null, new LeafEntry(record.getId(), datafileBlockId, boundsForEachDimension), LEAF_LEVEL); // Inserting on leaf level since it's a new record
     }
 
     // Inserts nodes recursively. As an optimization, the algorithm steps are

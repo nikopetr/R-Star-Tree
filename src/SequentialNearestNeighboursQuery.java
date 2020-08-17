@@ -55,7 +55,7 @@ class SequentialNearestNeighboursQuery extends SequentialScanQuery {
                        for (int d = 0; d < FilesHelper.getDataDimensions(); d++)
                            boundsForEachDimension.add(new Bounds(record.getCoordinate(d), record.getCoordinate(d)));
 
-                       entries.add(new LeafEntry(record.getId(), boundsForEachDimension));
+                       entries.add(new LeafEntry(record.getId(), blockId, boundsForEachDimension));
                    }
                    int i = 0;
                    while(i < entries.size()){
