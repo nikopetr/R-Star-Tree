@@ -120,7 +120,7 @@ public class QueriesTesting {
             rangeQueryFile.write("area       R Star - Range Query" + " ------ " + "Sequential Scan Range Query\n");
             while(j < rStarRangeQueryTime.size()){
 
-                rangeQueryFile.write( + margin.get(j) + "  :                " + rStarRangeQueryTime.get(j)+ "                      " + seqScanRangeQueryTime.get(j) + "\n");
+                rangeQueryFile.write(margin.get(j) + "  :                " + rStarRangeQueryTime.get(j)+ "                      " + seqScanRangeQueryTime.get(j) + "\n");
                 j++;
 
             }
@@ -132,7 +132,7 @@ public class QueriesTesting {
             pointRadiusQueryFile.write("radius       R Star - Point Radius Query" + " ------ " + "Sequential Scan Point Radius Query\n");
             while(j < pointRadiusRStarTime.size()){
 
-                pointRadiusQueryFile.write( + r + "  :                " + pointRadiusRStarTime.get(j)+ "                      " + pointRadiusSeqScanTime.get(j) + "\n");
+                pointRadiusQueryFile.write(r + "  :                " + pointRadiusRStarTime.get(j)+ "                      " + pointRadiusSeqScanTime.get(j) + "\n");
                 j++;
                 r = r + 5.0;
 
