@@ -364,7 +364,7 @@ class FilesHelper {
             //bis = new BufferedInputStream(fis);
             byte[] block = new byte[BLOCK_SIZE];
             if (bis.read(block,0,BLOCK_SIZE) != BLOCK_SIZE)
-                throw new IllegalStateException("Block size read was not of" + BLOCK_SIZE + "bytes");
+                throw new IllegalStateException("Block size read was not of " + BLOCK_SIZE + "bytes");
 
 
             byte[] goodPutLengthInBytes = serialize(new Random().nextInt()); // Serializing an integer ir order to get the size of goodPutLength in bytes
