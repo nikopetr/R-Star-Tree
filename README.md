@@ -27,7 +27,7 @@ These graphs are generated from the tables created by the RunMultiple2DQueries.j
 
 ![Image description](/images-readme/Range query (within a circle's radius) performance.png)
 ![Image description](/images-readme/Range query (within a rectangle) performance.png)
-![Image description](/images-readme/K-nearest neighbors query performance.png)
+![Image description](/images-readme/K-nearest-neighbors-query-performance.png)
 
 ## References:
 - Beckmann, N., Kriegel, H. P., Schneider, R., & Seeger, B. (1990). The R*-tree: an efficient and robust access method for points and rectangles. Proceedings of the 1990 ACM SIGMOD international conference on Management of data - SIGMOD '90.
