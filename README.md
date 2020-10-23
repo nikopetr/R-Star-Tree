@@ -25,9 +25,9 @@ The data.csv file which has the data of each node, contains approximately 900,00
 Below are indicative graphs showing execution times as the area of interest for range queries grows and k increases for nearest neighbors queries, as well as comparisons with sequential scanning on the large number of the real data, which was extracted from https://www.openstreetmap.org/.
 These graphs are generated from the tables created by the RunMultiple2DQueries.java class, which runs with the included data and index files. These tables are located in the included .csv files
 
-![Image description](/images-readme/Range query (within a circle's radius) performance.png)
-![Image description](/images-readme/Range query (within a rectangle) performance.png)
-![Image description](/images-readme/K-nearest neighbors query performance.png)
+![Image description](/images-readme/Range-query-circle.png)
+![Image description](/images-readme/Range-query-rectangle.png)
+![Image description](/images-readme/K-nearest-neighbors-query.png)
 
 ## References:
 - Beckmann, N., Kriegel, H. P., Schneider, R., & Seeger, B. (1990). The R*-tree: an efficient and robust access method for points and rectangles. Proceedings of the 1990 ACM SIGMOD international conference on Management of data - SIGMOD '90.
