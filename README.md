@@ -19,7 +19,7 @@ The main difference between the R*-tree and the original R-tree, is that during 
 For pages of M objects, the process of insertion in the R*-tree is done with O (MlogM), where it is more complicated than the linear separation O(M) of the simple R-tree, but less complicated than the quadratic separation strategy O(M^2) and it only has a little effect on overall complexity. The overall complexity for insertions is still comparable to the R-tree, as re-inserts affect at most one branch of the tree, resulting in a maximum of O (NlogN) re-inserts, comparable to performing splitting on a regular R-tree. Thus, overall, the complexity of the R*-tree is similar to that of a R-tree. R*-trees have slightly higher construction costs than standard R-trees, as data may need to be re-inserted. However, the resulting tree usually performs better in queries.
 
 ## Data used
-The data.csv file which has the data of each node, contains approximately 900,000 different points (real geographical data extracted from https://www.openstreetmap.org) that were used to create the datafile and indexfile included.
+The data.csv file which has the data of each node, contains approximately 900,000 different points (real geographical data extracted from https://www.openstreetmap.org) that were used to create the included datafile and indexfile.
 
 ## Queries comparison between the R*-Tree and the Sequential Scan
 Below are indicative graphs showing execution times as the area of interest for range queries grows and k increases for nearest neighbors queries, as well as comparisons with sequential scanning on the large number of the real data, which was extracted from https://www.openstreetmap.org/.
